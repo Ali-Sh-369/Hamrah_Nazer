@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1565C0">
+  <title>Hamrah_Nazer</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #f5f7fb;
+      --surface-color: #ffffff;
+      --text-color: #212121;
+      --primary-color: #1565c0;
+      --border-color: #e0e0e0;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --surface-color: #1e1e1e;
+      --text-color: #e0e0e0;
+      --primary-color: #1565c0;
+      --border-color: #333333;
+    }
+
+    [data-theme="dark"] header {
+      background-color: var(--primary-color);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Vazirmatn', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--primary-color);
+      color: #fff;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      flex-shrink: 0;
+    }
+
+    .header-title { font-weight: bold; font-size: 1rem; }
+    .header-actions { display: flex; gap: 12px; align-items: center; }
+    
+    .btn-icon {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    #login-screen, #main-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .hidden { display: none !important; }
+
+    .login-container {
+      margin: auto;
+      background: var(--surface-color);
+      padding: 25px;
+      border-radius: 16px;
+      width: 85%;
+      max-width: 330px;
+      text-align: center;
+    }
+
+    .login-container h3 {
+      color: var(--primary-color);
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      text-align: right;
+    }
+
+    .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: inherit;
+    }
+
+    .btn-block {
+      width: 100%;
+      padding: 12px;
+      background: #1565c0;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    #workspace {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #map { flex: 1; z-index: 1; min-height: 0; }
+
+    #panel {
+      background: var(--surface-color);
+      border-top: 1px solid var(--border-color);
+      padding: 10px;
+      max-height: 40vh;
+      overflow-y: auto;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .timer-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-color);
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    .timer-digits { font-family: monospace; font-size: 1.1rem; font-weight: bold; }
+
+    .btn-action {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: inherit;
+      font-size: 0.8rem;
+    }
+
+    .btn-success { background: #2e7d32; color: white; }
+    .btn-warning { background: #ef6c00; color: white; }
+    .btn-danger { background: #c62828; color: white; }
+    .btn-secondary { background: #757575; color: white; }
+    .btn-primary { background: #1565c0; color: white; }
+
+    .location-details {
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 12px;
+      margin-top: 8px;
+    }
+
+    .image-gallery {
+      display: flex;
+      gap: 6px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .thumb-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      background: #f0f0f0;
+    }
+    
+    .thumb-img.error-img {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e0e0e0;
+      color: #757575;
+      font-size: 20px;
+    }
+    
+    [data-theme="dark"] .thumb-img.error-img {
+      background: #333;
+      color: #aaa;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    .status-pending { background: #ffe082; color: #b78103; }
+    .status-done { background: #c8e6c9; color: #2e7d32; }
+    .status-review { background: #ffcc80; color: #ef6c00; }
+
+    textarea {
+      width: 100%;
+      height: 50px;
+      margin-top: 6px;
+      padding: 6px;
+      box-sizing: border-box;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: inherit;
+      font-size: 0.8rem;
+    }
+
+    .target-selector {
+      margin-top: 8px;
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .target-chip {
+      padding: 4px 12px;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      white-space: nowrap;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .target-chip.active { background: var(--primary-color); color: white; }
+    .target-chip.visited { background: #2e7d32; color: white; }
+    .target-chip.current { background: #ef6c00; color: white; }
+
+    .sort-btn-container {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .sort-btn-container .btn-action { flex: 1; justify-content: center; }
+
+    .route-buttons {
+      display: flex;
+      gap: 6px;
+      margin: 6px 0;
+    }
+    .route-buttons .btn-action { flex: 1; justify-content: center; }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 30px;
+      z-index: 2000;
+      display: none;
+      font-size: 0.8rem;
+    }
+
+    .custom-div-icon { background: transparent; border: none; }
+    .marker-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+      border: 2px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .marker-circle.blue { background: #1565C0; }
+    .marker-circle.orange { background: #F57F17; }
+    .marker-circle.green { background: #2E7D32; }
+  </style>
+</head>
+<body>
+
+  <div id="toast">پیام سیستم</div>
+
+  <header>
+    <div class="header-title">🚀 Hamnaz</div>
+    <div class="header-actions">
+      <button class="btn-icon" id="theme-toggle"><i class="fas fa-moon"></i></button>
+      <button class="btn-icon hidden" id="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </header>
+
+  <div id="login-screen">
+    <div class="login-container">
+      <h3>🔐 ورود</h3>
+      <div class="form-group">
+        <label>نام کاربری:</label>
+        <input type="text" id="login-user" placeholder="نام کاربری">
+      </div>
+      <div class="form-group">
+        <label>رمز عبور:</label>
+        <input type="password" id="login-pass" placeholder="******">
+      </div>
+      <button class="btn-block" id="do-login">ورود</button>
+    </div>
+  </div>
+
+  <div id="main-screen" class="hidden">
+    <div id="workspace">
+      <div id="map"></div>
+
+      <div id="panel">
+        <div id="upload-section">
+          <label style="font-weight: bold; display:block; margin-bottom:6px;">📂 آپلود Excel:</label>
+          <input type="file" id="excel-file" accept=".csv, .xlsx, .xls" />
+          <p style="font-size:0.7rem; color:#757575; margin-top:4px;">ترتیب ستون‌ها: name, lon, lat, توضیحات, img1, img2, img3</p>
+          <p style="font-size:0.7rem; color:#1565c0; margin-top:2px;">✨ عدد داخل نام (مثل 123 در "نقطه 123") به عنوان شماره بوک‌مارک استفاده می‌شود</p>
+        </div>
+
+        <div id="inspection-section" class="hidden">
+          <div class="timer-container">
+            <div>
+              <span style="font-size:0.7rem;">⏱ زمان کل</span>
+              <div class="timer-digits" id="total-timer">00:00:00</div>
+            </div>
+            <div>
+              <button class="btn-action btn-warning" id="pause-resume-btn" style="padding:4px 8px;"><i class="fas fa-pause"></i> <span style="font-size:0.75rem;">توقف</span></button>
+              <button class="btn-action btn-danger" id="finish-inspection-btn" style="padding:4px 8px;"><i class="fas fa-flag-checkered"></i> <span style="font-size:0.75rem;">PDF</span></button>
+            </div>
+          </div>
+
+          <div class="sort-btn-container">
+            <button class="btn-action btn-primary" id="sort-route-btn" style="padding:6px;">
+              <i class="fas fa-sort-amount-down"></i> مرتب‌سازی مسیر
+            </button>
+          </div>
+
+          <div class="target-selector" id="target-chips"></div>
+
+          <div class="location-details" id="current-loc-details">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 id="loc-name" style="margin:0; font-size:0.9rem;">انتخاب هدف...</h4>
+              <span class="status-badge status-pending" id="loc-status">نامشخص</span>
+            </div>
+            
+            <p id="loc-desc" style="font-size: 0.75rem; color: #666; margin: 6px 0;"></p>
+            <div class="image-gallery" id="loc-images"></div>
+
+            <div id="inspector-inputs" class="hidden">
+              <div style="display:flex; gap: 5px; margin: 6px 0;">
+                <button class="btn-action btn-success" id="mark-done-btn" style="padding:5px;"><i class="fas fa-check"></i> انجام شد</button>
+                <button class="btn-action btn-warning" id="mark-review-btn" style="padding:5px;"><i class="fas fa-exclamation-triangle"></i> بررسی</button>
+              </div>
+              
+              <div class="route-buttons">
+                <button class="btn-action btn-primary" id="google-route-btn" style="padding:5px;"><i class="fab fa-google"></i> مسیر در گوگل</button>
+                <button class="btn-action btn-secondary" id="clear-route-btn" style="padding:5px;"><i class="fas fa-times"></i> پاک کردن</button>
+              </div>
+              
+              <textarea id="loc-note" placeholder="📝 یادداشت..."></textarea>
+            </div>
+          </div>
+          
+          <button class="btn-block btn-secondary" id="reset-track-btn" style="margin-top:10px; padding:8px;">🗑 حذف و آپلود جدید</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+    const USERS_DATABASE = { "Mehdi": "2525800", "Ali": "2078" };
+
+    let currentUser = null;
+    let locations = [];
+    let selectedIndex = null;
+    let currentInspectionIndex = 0;
+    let map, markersGroup;
+    let timerInterval;
+    let totalSeconds = 0;
+    let isPaused = false;
+    let userMarker = null;
+    let userLat = null;
+    let userLon = null;
+    let currentRouteLayer = null;
+
+    const loginScreen = document.getElementById('login-screen');
+    const mainScreen = document.getElementById('main-screen');
+    const logoutBtn = document.getElementById('logout-btn');
+    const themeToggle = document.getElementById('theme-toggle');
+    const uploadSection = document.getElementById('upload-section');
+    const inspectionSection = document.getElementById('inspection-section');
+    const targetChips = document.getElementById('target-chips');
+    const totalTimerText = document.getElementById('total-timer');
+    const pauseResumeBtn = document.getElementById('pause-resume-btn');
+
+    // ========== تابع جدید: استخراج عدد از نام ==========
+    // ورودی: یک رشته مثل "نقطه 123" یا "پست 456" یا "A123B"
+    // خروجی: اولین عدد پیدا شده (مثلاً 123 یا 456) بین 0 تا 500
+    // اگر عددی نبود، null برمی‌گرداند
+    function extractNumberFromName(name) {
+      if (!name) return null;
+      // پیدا کردن همه اعداد در رشته (با پشتیبانی از اعشار و اعداد منفی اما ما فقط عدد صحیح می‌خواهیم)
+      const matches = name.toString().match(/\d+/g);
+      if (matches && matches.length > 0) {
+        let num = parseInt(matches[0], 10);
+        // محدود کردن بین 0 تا 500 (اختیاری)
+        if (num < 0) num = 0;
+        if (num > 500) num = 500;
+        return num;
+      }
+      return null;
+    }
+    // ===============================================
+
+    // تابع برای ایجاد تصویر placeholder هنگام خطا
+    function createImageWithFallback(url, className, altText = 'تصویر') {
+      const img = document.createElement('img');
+      img.src = url;
+      img.className = className;
+      img.alt = altText;
+      img.loading = 'lazy';
+      
+      const handleImageError = () => {
+        img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="%23999999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"%3E%3C/rect%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"%3E%3C/circle%3E%3Cpolyline points="21 15 16 10 5 21"%3E%3C/polyline%3E%3C/svg%3E';
+        img.classList.add('error-img');
+        img.style.objectFit = 'contain';
+        img.style.backgroundColor = '#e0e0e0';
+        img.style.padding = '12px';
+      };
+      
+      img.onerror = handleImageError;
+      if (!url || url.trim() === '') {
+        handleImageError();
+      }
+      
+      return img;
+    }
+
+    // Theme
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      themeToggle.innerHTML = newTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    });
+
+    // Login
+    document.getElementById('do-login').addEventListener('click', () => {
+      const user = document.getElementById('login-user').value.trim();
+      const pass = document.getElementById('login-pass').value;
+      if(USERS_DATABASE[user] && USERS_DATABASE[user] === pass) {
+        currentUser = user;
+        localStorage.setItem('hamnaz_logged_user', user);
+        initMainWorkspace();
+      } else {
+        showToast('❌ نام کاربری یا رمز اشتباه است!');
+      }
+    });
+
+    window.addEventListener('load', () => {
+      const savedUser = localStorage.getItem('hamnaz_logged_user');
+      if(savedUser) {
+        currentUser = savedUser;
+        initMainWorkspace();
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('hamnaz_logged_user');
+      location.reload();
+    });
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    function sortLocationsByDistance() {
+      if (!userLat || !userLon) {
+        showToast('⚠️ موقعیت شما مشخص نیست! چند ثانیه صبر کنید.');
+        return;
+      }
+      if (locations.length === 0) return;
+      
+      showToast('🔄 مرتب‌سازی مسیر...');
+      const locationsWithDistance = locations.map((loc, index) => ({
+        ...loc, distance: calculateDistance(userLat, userLon, loc.lat, loc.lon)
+      }));
+      locationsWithDistance.sort((a, b) => a.distance - b.distance);
+      
+      locations = locationsWithDistance.map(({ id, name, lon, lat, desc, img1, img2, img3, status, note, bookmarkNumber }) => ({
+        id, name, lon, lat, desc, img1, img2, img3, status, note, bookmarkNumber
+      }));
+      
+      currentInspectionIndex = 0;
+      selectedIndex = 0;
+      saveProgressLocally();
+      renderWorkspace();
+      selectLocation(0);
+      showToast(`✅ مسیر مرتب شد!`);
+    }
+
+    function openGoogleMaps(lat, lon, name) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`;
+      window.open(url, '_blank');
+    }
+
+    function clearRoute() {
+      if (currentRouteLayer) {
+        currentRouteLayer.remove();
+        currentRouteLayer = null;
+        showToast('🗺 مسیر پاک شد');
+      }
+    }
+
+    function initMainWorkspace() {
+      loginScreen.classList.add('hidden');
+      mainScreen.classList.remove('hidden');
+      logoutBtn.classList.remove('hidden');
+      initMap();
+      
+      const savedData = localStorage.getItem(`hamnaz_track_${currentUser}`);
+      if(savedData) {
+        const parsed = JSON.parse(savedData);
+        locations = parsed.locations || [];
+        totalSeconds = parsed.totalSeconds || 0;
+        currentInspectionIndex = parsed.currentInspectionIndex || 0;
+        if(locations.length > 0) {
+          renderWorkspace();
+          startTimer();
+          const firstPending = locations.findIndex(l => l.status === 'pending');
+          if(firstPending !== -1) {
+            currentInspectionIndex = firstPending;
+            selectLocation(currentInspectionIndex);
+          }
+        }
+      }
+      startUserTracking();
+    }
+
+    function initMap() {
+      if (map) return;
+      const YAZD_CENTER = [31.8974, 54.3569];
+      map = L.map('map', { zoomControl: true }).setView(YAZD_CENTER, 12);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 18
+      }).addTo(map);
+      markersGroup = L.layerGroup().addTo(map);
+    }
+
+    function startUserTracking() {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.watchPosition(
+        (position) => {
+          userLat = position.coords.latitude;
+          userLon = position.coords.longitude;
+          if (userMarker) {
+            userMarker.setLatLng([userLat, userLon]);
+          } else {
+            userMarker = L.circleMarker([userLat, userLon], {
+              radius: 10, color: '#ff0000', fillColor: '#ff0000', fillOpacity: 0.8, weight: 2
+            }).addTo(map).bindPopup('📍 شما');
+          }
+        },
+        (error) => console.error(error),
+        { enableHighAccuracy: true, maximumAge: 5000 }
+      );
+    }
+
+    document.getElementById('excel-file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+        processExcelData(json);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function processExcelData(rows) {
+      locations = [];
+      const startIdx = (rows[0] && isNaN(rows[0][1])) ? 1 : 0;
+      for(let i = startIdx; i < rows.length; i++) {
+        const r = rows[i];
+        if(!r[0] || !r[1] || !r[2]) continue;
+        
+        const rawName = r[0].toString();
+        // استخراج عدد بوک‌مارک از نام
+        const bookmarkNumber = extractNumberFromName(rawName);
+        
+        locations.push({
+          id: 'loc_' + i, 
+          name: rawName, 
+          lon: parseFloat(r[1]), 
+          lat: parseFloat(r[2]),
+          desc: r[3] || '', 
+          img1: r[4] || '', 
+          img2: r[5] || '', 
+          img3: r[6] || '',
+          status: 'pending', 
+          note: '',
+          bookmarkNumber: bookmarkNumber  // ذخیره عدد بوک‌مارک
+        });
+      }
+      if(locations.length > 0) {
+        currentInspectionIndex = 0;
+        saveProgressLocally();
+        renderWorkspace();
+        startTimer();
+        selectLocation(0);
+        showToast(`✅ ${locations.length} نقطه بارگذاری شد.`);
+      } else {
+        showToast('❌ فرمت فایل معتبر نیست!');
+      }
+    }
+
+    function saveProgressLocally() {
+      if(!currentUser) return;
+      localStorage.setItem(`hamnaz_track_${currentUser}`, JSON.stringify({
+        locations: locations, totalSeconds: totalSeconds, currentInspectionIndex: currentInspectionIndex
+      }));
+    }
+
+    // تابع کمکی برای گرفتن متن نمایشی روی مارکر
+    function getMarkerDisplayNumber(loc, idx) {
+      // اگر عدد بوک‌مارک وجود دارد و بین 0 تا 500 است، از آن استفاده کن
+      if (loc.bookmarkNumber !== null && loc.bookmarkNumber !== undefined) {
+        return loc.bookmarkNumber.toString();
+      }
+      // در غیر این صورت از اندیس (شماره ردیف) استفاده کن
+      return (idx + 1).toString();
+    }
+
+    function createCircleMarker(loc, idx, isCurrent, isVisited) {
+      let colorClass = 'blue';
+      if (isVisited) colorClass = 'green';
+      else if (isCurrent) colorClass = 'orange';
+      
+      const displayNumber = getMarkerDisplayNumber(loc, idx);
+      
+      const icon = L.divIcon({
+        html: `<div class="marker-circle ${colorClass}">${displayNumber}</div>`,
+        className: 'custom-div-icon', iconSize: [28, 28], iconAnchor: [14, 14]
+      });
+      return L.marker([loc.lat, loc.lon], { icon });
+    }
+
+    function renderWorkspace() {
+      uploadSection.classList.add('hidden');
+      inspectionSection.classList.remove('hidden');
+      if (markersGroup) markersGroup.clearLayers();
+      targetChips.innerHTML = '';
+
+      locations.forEach((loc, idx) => {
+        const isVisited = loc.status === 'done';
+        const isCurrent = (idx === currentInspectionIndex && loc.status === 'pending');
+        
+        // نمایش در چیپ‌ها: عدد بوک‌مارک + نام (اختیاری)
+        const chipNumber = getMarkerDisplayNumber(loc, idx);
+        const chipTitle = loc.bookmarkNumber !== null ? `${chipNumber} - ${loc.name}` : `${idx+1}. ${loc.name}`;
+        
+        const chip = document.createElement('div');
+        chip.className = `target-chip ${selectedIndex === idx ? 'active' : ''} ${isVisited ? 'visited' : ''} ${isCurrent ? 'current' : ''}`;
+        chip.innerText = chipTitle.substring(0, 30);
+        chip.addEventListener('click', () => selectLocation(idx));
+        targetChips.appendChild(chip);
+
+        const marker = createCircleMarker(loc, idx, isCurrent, isVisited);
+        marker.addTo(markersGroup);
+        marker.on('click', () => selectLocation(idx));
+      });
+
+      if(selectedIndex !== null) {
+        updateDetailPanel();
+      } else if(locations.length > 0) {
+        const bounds = locations.map(l => [l.lat, l.lon]);
+        map.fitBounds(bounds, { padding: [40, 40] });
+      }
+    }
+
+    function selectLocation(idx) {
+      selectedIndex = idx;
+      renderWorkspace();
+      const loc = locations[idx];
+      map.setView([loc.lat, loc.lon], 15);
+      updateDetailPanel();
+    }
+
+    function updateDetailPanel() {
+      if (selectedIndex === null) return;
+      const loc = locations[selectedIndex];
+      const displayNumber = getMarkerDisplayNumber(loc, selectedIndex);
+      document.getElementById('loc-name').innerHTML = `<i class="fas fa-map-pin"></i> [${displayNumber}] ${loc.name}`;
+      document.getElementById('loc-desc').innerText = loc.desc || 'بدون توضیحات';
+      
+      const statusBadge = document.getElementById('loc-status');
+      statusBadge.innerText = loc.status === 'done' ? '✅ انجام شده' : (loc.status === 'review' ? '⚠️ نیاز به بررسی' : '⏳ در انتظار');
+      statusBadge.className = `status-badge status-${loc.status}`;
+
+      const imgGallery = document.getElementById('loc-images');
+      imgGallery.innerHTML = '';
+      
+      const imageUrls = [loc.img1, loc.img2, loc.img3];
+      imageUrls.forEach((url, index) => {
+        if (url && url.trim()) {
+          const img = createImageWithFallback(url, 'thumb-img', `تصویر ${index + 1} - ${loc.name}`);
+          img.onclick = () => window.open(url, '_blank');
+          imgGallery.appendChild(img);
+        } else {
+          const placeholderImg = createImageWithFallback('', 'thumb-img', 'بدون تصویر');
+          placeholderImg.onclick = () => showToast('تصویری برای این آیتم وجود ندارد');
+          imgGallery.appendChild(placeholderImg);
+        }
+      });
+
+      document.getElementById('inspector-inputs').classList.remove('hidden');
+      const noteArea = document.getElementById('loc-note');
+      noteArea.value = loc.note || '';
+      noteArea.oninput = (e) => {
+        locations[selectedIndex].note = e.target.value;
+        saveProgressLocally();
+      };
+    }
+
+    function updateStatus(newStatus) {
+      if(selectedIndex === null) return;
+      locations[selectedIndex].status = newStatus;
+      locations[selectedIndex].note = document.getElementById('loc-note').value;
+      saveProgressLocally();
+      showToast(newStatus === 'done' ? '✓ انجام شد' : '⚠️ نیاز به بررسی');
+      
+      let nextIndex = -1;
+      for (let i = 0; i < locations.length; i++) {
+        if (locations[i].status === 'pending') { nextIndex = i; break; }
+      }
+      
+      if (nextIndex !== -1) {
+        currentInspectionIndex = nextIndex;
+        selectedIndex = currentInspectionIndex;
+        renderWorkspace();
+        const nextLoc = locations[currentInspectionIndex];
+        map.setView([nextLoc.lat, nextLoc.lon], 15);
+        updateDetailPanel();
+        showToast(`📍 رفتن به: ${nextLoc.name}`);
+      } else {
+        showToast('🎉 همه نقاط بازرسی شدند!');
+        currentInspectionIndex = -1;
+        renderWorkspace();
+      }
+    }
+
+    document.getElementById('mark-done-btn')?.addEventListener('click', () => updateStatus('done'));
+    document.getElementById('mark-review-btn')?.addEventListener('click', () => updateStatus('review'));
+    document.getElementById('sort-route-btn')?.addEventListener('click', () => sortLocationsByDistance());
+    document.getElementById('google-route-btn')?.addEventListener('click', () => {
+      if (selectedIndex !== null) {
+        const loc = locations[selectedIndex];
+        openGoogleMaps(loc.lat, loc.lon, loc.name);
+      }
+    });
+    document.getElementById('clear-route-btn')?.addEventListener('click', () => clearRoute());
+
+    function startTimer() {
+      if(timerInterval) return;
+      timerInterval = setInterval(() => {
+        if(!isPaused) {
+          totalSeconds++;
+          const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+          const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+          const secs = String(totalSeconds % 60).padStart(2, '0');
+          totalTimerText.innerText = `${hrs}:${mins}:${secs}`;
+          if(totalSeconds % 10 === 0) saveProgressLocally();
+        }
+      }, 1000);
+    }
+
+    pauseResumeBtn.addEventListener('click', () => {
+      isPaused = !isPaused;
+      if(isPaused) {
+        pauseResumeBtn.innerHTML = '<i class="fas fa-play"></i> <span>ادامه</span>';
+        pauseResumeBtn.className = "btn-action btn-success";
+      } else {
+        pauseResumeBtn.innerHTML = '<i class="fas fa-pause"></i> <span>توقف</span>';
+        pauseResumeBtn.className = "btn-action btn-warning";
+      }
+    });
+
+    document.getElementById('reset-track-btn').addEventListener('click', () => {
+      if(confirm('پاک شود؟')) {
+        localStorage.removeItem(`hamnaz_track_${currentUser}`);
+        location.reload();
+      }
+    });
+
+    document.getElementById('finish-inspection-btn').addEventListener('click', () => {
+      saveProgressLocally();
+      generatePDFReport();
+    });
+
+    function generatePDFReport() {
+      showToast('📄 در حال ساخت PDF...');
+      const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.direction
