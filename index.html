@@ -31,11 +31,7 @@
       background-color: var(--primary-color);
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Vazirmatn', sans-serif;
@@ -51,16 +47,15 @@
     header {
       background-color: var(--primary-color);
       color: #fff;
-      padding: 12px 16px;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       z-index: 1000;
       flex-shrink: 0;
     }
 
-    .header-title { font-weight: bold; font-size: 1.1rem; }
+    .header-title { font-weight: bold; font-size: 1rem; }
     .header-actions { display: flex; gap: 12px; align-items: center; }
     
     .btn-icon {
@@ -69,7 +64,7 @@
       color: white;
       font-size: 1.2rem;
       cursor: pointer;
-      padding: 6px;
+      padding: 4px;
     }
 
     #login-screen, #main-screen {
@@ -86,9 +81,8 @@
       background: var(--surface-color);
       padding: 25px;
       border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
       width: 85%;
-      max-width: 350px;
+      max-width: 330px;
       text-align: center;
     }
 
@@ -102,15 +96,15 @@
       text-align: right;
     }
 
-    .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; }
     .form-group input {
       width: 100%;
       padding: 10px;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      box-sizing: border-box;
       background: var(--bg-color);
       color: var(--text-color);
+      font-family: inherit;
     }
 
     .btn-block {
@@ -138,11 +132,10 @@
     #panel {
       background: var(--surface-color);
       border-top: 1px solid var(--border-color);
-      padding: 12px;
-      max-height: 42vh;
+      padding: 10px;
+      max-height: 40vh;
       overflow-y: auto;
       z-index: 100;
-      box-shadow: 0 -3px 10px rgba(0,0,0,0.05);
       flex-shrink: 0;
     }
 
@@ -151,24 +144,24 @@
       justify-content: space-between;
       align-items: center;
       background: var(--bg-color);
-      padding: 10px;
-      border-radius: 12px;
-      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
     }
 
-    .timer-digits { font-family: monospace; font-size: 1.2rem; font-weight: bold; }
+    .timer-digits { font-family: monospace; font-size: 1.1rem; font-weight: bold; }
 
     .btn-action {
-      padding: 8px 12px;
+      padding: 6px 10px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       font-family: inherit;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
 
     .btn-success { background: #2e7d32; color: white; }
@@ -179,21 +172,21 @@
 
     .location-details {
       border: 1px solid var(--border-color);
-      padding: 12px;
+      padding: 10px;
       border-radius: 12px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
     .image-gallery {
       display: flex;
-      gap: 8px;
-      margin: 10px 0;
+      gap: 6px;
+      margin: 8px 0;
       overflow-x: auto;
     }
 
     .thumb-img {
-      width: 70px;
-      height: 70px;
+      width: 60px;
+      height: 60px;
       object-fit: cover;
       border-radius: 8px;
       border: 1px solid var(--border-color);
@@ -202,9 +195,9 @@
 
     .status-badge {
       display: inline-block;
-      padding: 3px 10px;
+      padding: 2px 8px;
       border-radius: 20px;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: bold;
     }
     .status-pending { background: #ffe082; color: #b78103; }
@@ -213,59 +206,53 @@
 
     textarea {
       width: 100%;
-      height: 60px;
-      margin-top: 8px;
-      padding: 8px;
+      height: 50px;
+      margin-top: 6px;
+      padding: 6px;
       box-sizing: border-box;
       border: 1px solid var(--border-color);
       border-radius: 8px;
       background: var(--bg-color);
       color: var(--text-color);
       font-family: inherit;
-      resize: vertical;
+      font-size: 0.8rem;
     }
 
     .target-selector {
-      margin-top: 10px;
+      margin-top: 8px;
       display: flex;
-      gap: 6px;
+      gap: 5px;
       overflow-x: auto;
       padding-bottom: 5px;
     }
 
     .target-chip {
-      padding: 6px 14px;
+      padding: 4px 12px;
       background: var(--bg-color);
       border: 1px solid var(--border-color);
-      border-radius: 25px;
+      border-radius: 20px;
       white-space: nowrap;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
 
-    .target-chip.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-    .target-chip.visited { background: #2e7d32; color: white; border-color: #2e7d32; }
-    .target-chip.current { background: #ef6c00; color: white; border-color: #ef6c00; }
+    .target-chip.active { background: var(--primary-color); color: white; }
+    .target-chip.visited { background: #2e7d32; color: white; }
+    .target-chip.current { background: #ef6c00; color: white; }
 
     .sort-btn-container {
       display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
+      gap: 6px;
+      margin-bottom: 8px;
     }
-    .sort-btn-container .btn-action {
-      flex: 1;
-      justify-content: center;
-    }
+    .sort-btn-container .btn-action { flex: 1; justify-content: center; }
 
     .route-buttons {
       display: flex;
-      gap: 8px;
-      margin: 8px 0;
+      gap: 6px;
+      margin: 6px 0;
     }
-    .route-buttons .btn-action {
-      flex: 1;
-      justify-content: center;
-    }
+    .route-buttons .btn-action { flex: 1; justify-content: center; }
 
     #toast {
       position: fixed;
@@ -274,36 +261,30 @@
       transform: translateX(-50%);
       background: rgba(0,0,0,0.85);
       color: white;
-      padding: 10px 20px;
+      padding: 8px 16px;
       border-radius: 30px;
       z-index: 2000;
       display: none;
-      font-size: 0.85rem;
-      white-space: nowrap;
+      font-size: 0.8rem;
     }
 
     .custom-div-icon { background: transparent; border: none; }
     .marker-circle {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
       color: white;
       border: 2px solid white;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     }
     .marker-circle.blue { background: #1565C0; }
     .marker-circle.orange { background: #F57F17; }
     .marker-circle.green { background: #2E7D32; }
-
-    /* اسکرول بار زیبا */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: var(--border-color); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -323,13 +304,13 @@
       <h3>🔐 ورود ناظر</h3>
       <div class="form-group">
         <label>نام کاربری:</label>
-        <input type="text" id="login-user" placeholder="مثال: Mehdi">
+        <input type="text" id="login-user" placeholder="نام کاربری">
       </div>
       <div class="form-group">
         <label>رمز عبور:</label>
         <input type="password" id="login-pass" placeholder="******">
       </div>
-      <button class="btn-block" id="do-login">ورود به سیستم</button>
+      <button class="btn-block" id="do-login">ورود</button>
     </div>
   </div>
 
@@ -339,26 +320,26 @@
 
       <div id="panel">
         <div id="upload-section">
-          <label style="font-weight: bold; display:block; margin-bottom:8px;">📂 آپلود فایل Excel:</label>
+          <label style="font-weight: bold; display:block; margin-bottom:6px;">📂 آپلود Excel:</label>
           <input type="file" id="excel-file" accept=".csv, .xlsx, .xls" />
-          <p style="font-size:0.75rem; color:#757575; margin-top:5px;">ترتیب ستون‌ها: name, lon, lat, توضیحات, img1, img2, img3</p>
+          <p style="font-size:0.7rem; color:#757575; margin-top:4px;">ترتیب ستون‌ها: name, lon, lat, توضیحات, img1, img2, img3</p>
         </div>
 
         <div id="inspection-section" class="hidden">
           <div class="timer-container">
             <div>
-              <span style="font-size:0.75rem; display:block; color:#757575;">⏱ زمان کل بازرسی</span>
+              <span style="font-size:0.7rem;">⏱ زمان کل</span>
               <div class="timer-digits" id="total-timer">00:00:00</div>
             </div>
-            <div style="display:flex; gap: 5px;">
-              <button class="btn-action btn-warning" id="pause-resume-btn"><i class="fas fa-pause"></i> <span>توقف</span></button>
-              <button class="btn-action btn-danger" id="finish-inspection-btn"><i class="fas fa-flag-checkered"></i> PDF</button>
+            <div>
+              <button class="btn-action btn-warning" id="pause-resume-btn" style="padding:4px 8px;"><i class="fas fa-pause"></i> <span style="font-size:0.75rem;">توقف</span></button>
+              <button class="btn-action btn-danger" id="finish-inspection-btn" style="padding:4px 8px;"><i class="fas fa-flag-checkered"></i> <span style="font-size:0.75rem;">PDF</span></button>
             </div>
           </div>
 
           <div class="sort-btn-container">
-            <button class="btn-action btn-primary" id="sort-route-btn">
-              <i class="fas fa-sort-amount-down"></i> مرتب‌سازی مسیر (نزدیک‌ترین اول)
+            <button class="btn-action btn-primary" id="sort-route-btn" style="padding:6px;">
+              <i class="fas fa-sort-amount-down"></i> مرتب‌سازی مسیر
             </button>
           </div>
 
@@ -366,29 +347,29 @@
 
           <div class="location-details" id="current-loc-details">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <h4 id="loc-name" style="margin:0; font-size:1rem;">لطفاً یک هدف را انتخاب کنید...</h4>
+              <h4 id="loc-name" style="margin:0; font-size:0.9rem;">انتخاب هدف...</h4>
               <span class="status-badge status-pending" id="loc-status">نامشخص</span>
             </div>
             
-            <p id="loc-desc" style="font-size: 0.85rem; color: #666; margin: 8px 0;"></p>
+            <p id="loc-desc" style="font-size: 0.75rem; color: #666; margin: 6px 0;"></p>
             <div class="image-gallery" id="loc-images"></div>
 
             <div id="inspector-inputs" class="hidden">
-              <div style="display:flex; gap: 5px; margin-top: 10px; margin-bottom: 8px;">
-                <button class="btn-action btn-success" id="mark-done-btn"><i class="fas fa-check"></i> انجام شد</button>
-                <button class="btn-action btn-warning" id="mark-review-btn"><i class="fas fa-exclamation-triangle"></i> نیاز به بررسی</button>
+              <div style="display:flex; gap: 5px; margin: 6px 0;">
+                <button class="btn-action btn-success" id="mark-done-btn" style="padding:5px;"><i class="fas fa-check"></i> انجام شد</button>
+                <button class="btn-action btn-warning" id="mark-review-btn" style="padding:5px;"><i class="fas fa-exclamation-triangle"></i> بررسی</button>
               </div>
               
               <div class="route-buttons">
-                <button class="btn-action btn-primary" id="show-route-btn"><i class="fas fa-route"></i> مسیریابی</button>
-                <button class="btn-action btn-secondary" id="clear-route-btn"><i class="fas fa-times"></i> پاک کردن مسیر</button>
+                <button class="btn-action btn-primary" id="google-route-btn" style="padding:5px;"><i class="fab fa-google"></i> مسیر در گوگل</button>
+                <button class="btn-action btn-secondary" id="clear-route-btn" style="padding:5px;"><i class="fas fa-times"></i> پاک کردن</button>
               </div>
               
-              <textarea id="loc-note" placeholder="📝 یادداشت ناظر برای این لوکیشن..."></textarea>
+              <textarea id="loc-note" placeholder="📝 یادداشت..."></textarea>
             </div>
           </div>
           
-          <button class="btn-block btn-secondary" id="reset-track-btn" style="margin-top:15px;">🗑 حذف مسیر فعلی و آپلود فایل جدید</button>
+          <button class="btn-block btn-secondary" id="reset-track-btn" style="margin-top:10px; padding:8px;">🗑 حذف و آپلود جدید</button>
         </div>
       </div>
     </div>
@@ -403,13 +384,7 @@
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
 
-    // ==========================================
-    // 🔑 پایگاه داده ناظران
-    // ==========================================
-    const USERS_DATABASE = {
-      "Mehdi": "2525800",
-      "Ali": "2078",
-    };
+    const USERS_DATABASE = { "Mehdi": "2525800", "Ali": "2078" };
 
     let currentUser = null;
     let locations = [];
@@ -424,7 +399,6 @@
     let userLon = null;
     let currentRouteLayer = null;
 
-    // DOM elements
     const loginScreen = document.getElementById('login-screen');
     const mainScreen = document.getElementById('main-screen');
     const logoutBtn = document.getElementById('logout-btn');
@@ -435,7 +409,7 @@
     const totalTimerText = document.getElementById('total-timer');
     const pauseResumeBtn = document.getElementById('pause-resume-btn');
 
-    // ===== THEME TOGGLE =====
+    // Theme
     themeToggle.addEventListener('click', () => {
       const currentTheme = document.documentElement.getAttribute('data-theme');
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -443,17 +417,16 @@
       themeToggle.innerHTML = newTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
     });
 
-    // ===== LOGIN =====
+    // Login
     document.getElementById('do-login').addEventListener('click', () => {
       const user = document.getElementById('login-user').value.trim();
       const pass = document.getElementById('login-pass').value;
-
       if(USERS_DATABASE[user] && USERS_DATABASE[user] === pass) {
         currentUser = user;
         localStorage.setItem('hamnaz_logged_user', user);
         initMainWorkspace();
       } else {
-        showToast('❌ نام کاربری یا رمز عبور اشتباه است!');
+        showToast('❌ نام کاربری یا رمز اشتباه است!');
       }
     });
 
@@ -470,119 +443,43 @@
       location.reload();
     });
 
-    // ===== محاسبه فاصله =====
     function calculateDistance(lat1, lon1, lat2, lon2) {
       const R = 6371000;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       return R * c;
     }
 
-    // ===== مرتب‌سازی مسیر =====
     function sortLocationsByDistance() {
       if (!userLat || !userLon) {
-        showToast('⚠️ ابتدا موقعیت شما مشخص نشده است! لطفاً چند ثانیه صبر کنید.');
+        showToast('⚠️ موقعیت شما مشخص نیست! چند ثانیه صبر کنید.');
         return;
       }
+      if (locations.length === 0) return;
       
-      if (locations.length === 0) {
-        showToast('⚠️ هیچ نقطه‌ای برای مرتب‌سازی وجود ندارد!');
-        return;
-      }
-      
-      showToast('🔄 در حال مرتب‌سازی مسیر بر اساس نزدیک‌ترین فاصله...');
-      
-      const locationsWithDistance = locations.map((loc, index) => {
-        const distance = calculateDistance(userLat, userLon, loc.lat, loc.lon);
-        return { ...loc, originalIndex: index, distance };
-      });
-      
+      showToast('🔄 مرتب‌سازی مسیر...');
+      const locationsWithDistance = locations.map((loc, index) => ({
+        ...loc, distance: calculateDistance(userLat, userLon, loc.lat, loc.lon)
+      }));
       locationsWithDistance.sort((a, b) => a.distance - b.distance);
       
-      const newLocations = locationsWithDistance.map(item => ({
-        id: item.id,
-        name: item.name,
-        lon: item.lon,
-        lat: item.lat,
-        desc: item.desc,
-        img1: item.img1,
-        img2: item.img2,
-        img3: item.img3,
-        status: item.status,
-        note: item.note
+      locations = locationsWithDistance.map(({ id, name, lon, lat, desc, img1, img2, img3, status, note }) => ({
+        id, name, lon, lat, desc, img1, img2, img3, status, note
       }));
       
-      locations = newLocations;
       currentInspectionIndex = 0;
       selectedIndex = 0;
-      
       saveProgressLocally();
       renderWorkspace();
       selectLocation(0);
-      
-      showToast(`✅ مسیر مرتب شد! نزدیک‌ترین نقطه: ${locations[0].name}`);
+      showToast(`✅ مسیر مرتب شد!`);
     }
 
-    // ===== مسیریابی با OSRM =====
-    async function getRouteFromOSRM(startLat, startLon, endLat, endLon) {
-      const url = `https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`;
-      
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
-          const route = data.routes[0];
-          const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-          return { success: true, distance: route.distance, duration: route.duration, coordinates: coordinates };
-        } else {
-          return { success: false, error: 'مسیری یافت نشد' };
-        }
-      } catch (error) {
-        return { success: false, error: 'خطا در ارتباط با سرور مسیریابی' };
-      }
-    }
-
-    function drawRouteOnMap(coordinates) {
-      if (currentRouteLayer) currentRouteLayer.remove();
-      currentRouteLayer = L.polyline(coordinates, {
-        color: '#1565c0', weight: 5, opacity: 0.8, lineJoin: 'round'
-      }).addTo(map);
-      map.fitBounds(currentRouteLayer.getBounds(), { padding: [50, 50] });
-    }
-
-    function formatDistance(meters) {
-      if (meters < 1000) return `${Math.round(meters)} متر`;
-      return `${(meters / 1000).toFixed(1)} کیلومتر`;
-    }
-
-    function formatDuration(seconds) {
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      if (hours > 0) return `${hours} ساعت و ${minutes} دقیقه`;
-      return `${minutes} دقیقه`;
-    }
-
-    async function showRouteToLocation(targetLat, targetLon, targetName) {
-      if (!userLat || !userLon) {
-        showToast('⚠️ موقعیت شما مشخص نیست! لطفاً چند ثانیه صبر کنید.');
-        return;
-      }
-      
-      showToast(`🔄 در حال محاسبه مسیر به ${targetName}...`);
-      
-      const result = await getRouteFromOSRM(userLat, userLon, targetLat, targetLon);
-      
-      if (result.success) {
-        drawRouteOnMap(result.coordinates);
-        showToast(`✅ مسیر به ${targetName}: ${formatDistance(result.distance)} - ${formatDuration(result.duration)}`);
-      } else {
-        showToast(`❌ خطا: ${result.error}`);
-      }
+    function openGoogleMaps(lat, lon, name) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`;
+      window.open(url, '_blank');
     }
 
     function clearRoute() {
@@ -593,12 +490,10 @@
       }
     }
 
-    // ===== مقداردهی اولیه =====
     function initMainWorkspace() {
       loginScreen.classList.add('hidden');
       mainScreen.classList.remove('hidden');
       logoutBtn.classList.remove('hidden');
-      
       initMap();
       
       const savedData = localStorage.getItem(`hamnaz_track_${currentUser}`);
@@ -610,48 +505,40 @@
         if(locations.length > 0) {
           renderWorkspace();
           startTimer();
-          if(currentInspectionIndex < locations.length && locations[currentInspectionIndex].status === 'pending') {
+          const firstPending = locations.findIndex(l => l.status === 'pending');
+          if(firstPending !== -1) {
+            currentInspectionIndex = firstPending;
             selectLocation(currentInspectionIndex);
-          } else {
-            const firstPending = locations.findIndex(l => l.status === 'pending');
-            if(firstPending !== -1) {
-              currentInspectionIndex = firstPending;
-              selectLocation(currentInspectionIndex);
-            }
           }
         }
       }
-      
       startUserTracking();
     }
 
     function initMap() {
       if (map) return;
       const YAZD_CENTER = [31.8974, 54.3569];
-      map = L.map('map', { zoomControl: true }).setView(YAZD_CENTER, 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 19,
-        subdomains: ['a', 'b', 'c']
+      map = L.map('map', { zoomControl: true }).setView(YAZD_CENTER, 12);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 18
       }).addTo(map);
       markersGroup = L.layerGroup().addTo(map);
     }
 
     function startUserTracking() {
       if (!navigator.geolocation) return;
-      
       navigator.geolocation.watchPosition(
         (position) => {
           userLat = position.coords.latitude;
           userLon = position.coords.longitude;
-          
           if (userMarker) {
             userMarker.setLatLng([userLat, userLon]);
           } else {
             userMarker = L.circleMarker([userLat, userLon], {
-              radius: 12, color: '#ff0000', fillColor: '#ff0000',
-              fillOpacity: 0.8, weight: 3
-            }).addTo(map).bindPopup('📍 موقعیت شما');
+              radius: 10, color: '#ff0000', fillColor: '#ff0000', fillOpacity: 0.8, weight: 2
+            }).addTo(map).bindPopup('📍 شما');
           }
         },
         (error) => console.error(error),
@@ -659,7 +546,6 @@
       );
     }
 
-    // ===== پردازش Excel =====
     document.getElementById('excel-file').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -676,24 +562,15 @@
     function processExcelData(rows) {
       locations = [];
       const startIdx = isNaN(rows[0][1]) ? 1 : 0;
-      
       for(let i = startIdx; i < rows.length; i++) {
         const r = rows[i];
         if(!r[0] || !r[1] || !r[2]) continue;
         locations.push({
-          id: 'loc_' + i,
-          name: r[0],
-          lon: parseFloat(r[1]),
-          lat: parseFloat(r[2]),
-          desc: r[3] || 'بدون توضیحات',
-          img1: r[4] || '',
-          img2: r[5] || '',
-          img3: r[6] || '',
-          status: 'pending',
-          note: ''
+          id: 'loc_' + i, name: r[0], lon: parseFloat(r[1]), lat: parseFloat(r[2]),
+          desc: r[3] || '', img1: r[4] || '', img2: r[5] || '', img3: r[6] || '',
+          status: 'pending', note: ''
         });
       }
-      
       if(locations.length > 0) {
         currentInspectionIndex = 0;
         saveProgressLocally();
@@ -702,16 +579,14 @@
         selectLocation(0);
         showToast(`✅ ${locations.length} نقطه بارگذاری شد.`);
       } else {
-        showToast('❌ فرمت فایل اکسل معتبر نیست!');
+        showToast('❌ فرمت فایل معتبر نیست!');
       }
     }
 
     function saveProgressLocally() {
       if(!currentUser) return;
       localStorage.setItem(`hamnaz_track_${currentUser}`, JSON.stringify({
-        locations: locations,
-        totalSeconds: totalSeconds,
-        currentInspectionIndex: currentInspectionIndex
+        locations: locations, totalSeconds: totalSeconds, currentInspectionIndex: currentInspectionIndex
       }));
     }
 
@@ -719,12 +594,9 @@
       let colorClass = 'blue';
       if (isVisited) colorClass = 'green';
       else if (isCurrent) colorClass = 'orange';
-      
       const icon = L.divIcon({
         html: `<div class="marker-circle ${colorClass}">${idx + 1}</div>`,
-        className: 'custom-div-icon',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
+        className: 'custom-div-icon', iconSize: [28, 28], iconAnchor: [14, 14]
       });
       return L.marker([loc.lat, loc.lon], { icon });
     }
@@ -732,7 +604,6 @@
     function renderWorkspace() {
       uploadSection.classList.add('hidden');
       inspectionSection.classList.remove('hidden');
-      
       if (markersGroup) markersGroup.clearLayers();
       targetChips.innerHTML = '';
 
@@ -742,7 +613,7 @@
         
         const chip = document.createElement('div');
         chip.className = `target-chip ${selectedIndex === idx ? 'active' : ''} ${isVisited ? 'visited' : ''} ${isCurrent ? 'current' : ''}`;
-        chip.innerText = `${idx + 1}. ${loc.name}`;
+        chip.innerText = `${idx + 1}. ${loc.name.substring(0, 20)}`;
         chip.addEventListener('click', () => selectLocation(idx));
         targetChips.appendChild(chip);
 
@@ -763,15 +634,15 @@
       selectedIndex = idx;
       renderWorkspace();
       const loc = locations[idx];
-      map.setView([loc.lat, loc.lon], 16);
+      map.setView([loc.lat, loc.lon], 15);
       updateDetailPanel();
     }
 
     function updateDetailPanel() {
       if (selectedIndex === null) return;
       const loc = locations[selectedIndex];
-      document.getElementById('loc-name').innerText = loc.name;
-      document.getElementById('loc-desc').innerText = "📋 " + loc.desc;
+      document.getElementById('loc-name').innerHTML = `<i class="fas fa-map-pin"></i> ${loc.name}`;
+      document.getElementById('loc-desc').innerText = loc.desc || 'بدون توضیحات';
       
       const statusBadge = document.getElementById('loc-status');
       statusBadge.innerText = loc.status === 'done' ? '✅ انجام شده' : (loc.status === 'review' ? '⚠️ نیاز به بررسی' : '⏳ در انتظار');
@@ -780,7 +651,7 @@
       const imgGallery = document.getElementById('loc-images');
       imgGallery.innerHTML = '';
       [loc.img1, loc.img2, loc.img3].forEach(url => {
-        if(url && url.toString().trim() !== '') {
+        if(url && url.trim()) {
           const img = document.createElement('img');
           img.src = url;
           img.className = 'thumb-img';
@@ -793,7 +664,6 @@
       document.getElementById('inspector-inputs').classList.remove('hidden');
       const noteArea = document.getElementById('loc-note');
       noteArea.value = loc.note || '';
-      
       noteArea.oninput = (e) => {
         locations[selectedIndex].note = e.target.value;
         saveProgressLocally();
@@ -802,19 +672,14 @@
 
     function updateStatus(newStatus) {
       if(selectedIndex === null) return;
-      
       locations[selectedIndex].status = newStatus;
       locations[selectedIndex].note = document.getElementById('loc-note').value;
       saveProgressLocally();
-      
-      showToast(newStatus === 'done' ? '✓ انجام شد' : '⚠️ نیاز به بررسی ثبت شد');
+      showToast(newStatus === 'done' ? '✓ انجام شد' : '⚠️ نیاز به بررسی');
       
       let nextIndex = -1;
       for (let i = 0; i < locations.length; i++) {
-        if (locations[i].status === 'pending') {
-          nextIndex = i;
-          break;
-        }
+        if (locations[i].status === 'pending') { nextIndex = i; break; }
       }
       
       if (nextIndex !== -1) {
@@ -822,29 +687,27 @@
         selectedIndex = currentInspectionIndex;
         renderWorkspace();
         const nextLoc = locations[currentInspectionIndex];
-        map.setView([nextLoc.lat, nextLoc.lon], 16);
+        map.setView([nextLoc.lat, nextLoc.lon], 15);
         updateDetailPanel();
-        showToast(`📍 رفتن به نقطه بعدی: ${nextLoc.name}`);
+        showToast(`📍 رفتن به: ${nextLoc.name}`);
       } else {
-        showToast('🎉 تبریک! همه نقاط بازرسی شدند.');
+        showToast('🎉 همه نقاط بازرسی شدند!');
         currentInspectionIndex = -1;
         renderWorkspace();
       }
     }
 
-    // Event Listeners
     document.getElementById('mark-done-btn')?.addEventListener('click', () => updateStatus('done'));
     document.getElementById('mark-review-btn')?.addEventListener('click', () => updateStatus('review'));
     document.getElementById('sort-route-btn')?.addEventListener('click', () => sortLocationsByDistance());
-    document.getElementById('show-route-btn')?.addEventListener('click', () => {
+    document.getElementById('google-route-btn')?.addEventListener('click', () => {
       if (selectedIndex !== null) {
         const loc = locations[selectedIndex];
-        showRouteToLocation(loc.lat, loc.lon, loc.name);
+        openGoogleMaps(loc.lat, loc.lon, loc.name);
       }
     });
     document.getElementById('clear-route-btn')?.addEventListener('click', () => clearRoute());
 
-    // ===== TIMER =====
     function startTimer() {
       if(timerInterval) return;
       timerInterval = setInterval(() => {
@@ -854,7 +717,7 @@
           const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
           const secs = String(totalSeconds % 60).padStart(2, '0');
           totalTimerText.innerText = `${hrs}:${mins}:${secs}`;
-          if(totalSeconds % 5 === 0) saveProgressLocally();
+          if(totalSeconds % 10 === 0) saveProgressLocally();
         }
       }, 1000);
     }
@@ -871,7 +734,7 @@
     });
 
     document.getElementById('reset-track-btn').addEventListener('click', () => {
-      if(confirm('آیا کل پیشرفت پاک شود؟')) {
+      if(confirm('پاک شود؟')) {
         localStorage.removeItem(`hamnaz_track_${currentUser}`);
         location.reload();
       }
@@ -883,52 +746,31 @@
     });
 
     function generatePDFReport() {
-      showToast('📄 در حال صدور PDF...');
-      
+      showToast('📄 در حال ساخت PDF...');
       const element = document.createElement('div');
-      element.style.padding = '25px';
+      element.style.padding = '20px';
       element.style.direction = 'rtl';
       element.style.fontFamily = 'Vazirmatn, sans-serif';
-
       let rowsHtml = '';
       locations.forEach((loc, i) => {
         let statusText = loc.status === 'done' ? 'انجام شده' : (loc.status === 'review' ? 'نیاز به بررسی' : 'بازرسی نشده');
-        let statusColor = loc.status === 'done' ? '#2e7d32' : (loc.status === 'review' ? '#ef6c00' : '#757575');
-        rowsHtml += `
-          <tr style="border-bottom: 1px solid #e0e0e0;">
-            <td style="padding:12px; text-align:right; font-weight:bold;">${i+1}. ${loc.name}</td>
-            <td style="padding:12px; text-align:center; color:${statusColor};">${statusText}</td>
-            <td style="padding:12px; text-align:right;">${loc.note || '—'}</td>
-          </tr>
-        `;
+        rowsHtml += `<tr style="border-bottom:1px solid #ccc;"><td style="padding:8px;">${i+1}. ${loc.name}</td><td style="padding:8px;">${statusText}</td><td style="padding:8px;">${loc.note || '—'}</td></tr>`;
       });
-
       element.innerHTML = `
-        <div style="border: 2px solid #1565c0; padding:20px; border-radius:8px;">
-          <h2 style="text-align:center; color:#1565c0;">گزارش بازرسی میدانی</h2>
-          <div style="display:flex; justify-content:space-between; margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid #ccc;">
-            <span><b>ناظر:</b> ${currentUser}</span>
-            <span><b>زمان کل:</b> ${totalTimerText.innerText}</span>
-          </div>
-          <table style="width:100%; border-collapse: collapse;">
-            <thead><tr style="background:#1565c0; color:white;">
-              <th style="padding:12px;">موقعیت</th>
-              <th style="padding:12px;">وضعیت</th>
-              <th style="padding:12px;">یادداشت</th>
-            </tr></thead>
-            <tbody>${rowsHtml}</tbody>
-          </table>
+        <div style="border:2px solid #1565c0; padding:15px; border-radius:8px;">
+          <h2 style="text-align:center; color:#1565c0;">گزارش بازرسی</h2>
+          <div style="display:flex; justify-content:space-between; margin:10px 0;"><b>ناظر:</b> ${currentUser} <b>زمان:</b> ${totalTimerText.innerText}</div>
+          <table style="width:100%; border-collapse:collapse;">${rowsHtml}</table>
         </div>
       `;
-
-      html2pdf().from(element).set({ margin: 10, filename: `Report_${currentUser}_${new Date().toISOString().slice(0,10)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).save().then(() => showToast('✅ PDF ذخیره شد'));
+      html2pdf().from(element).set({ margin: 8, filename: `Report_${currentUser}_${new Date().toISOString().slice(0,10)}.pdf` }).save().then(() => showToast('✅ PDF ذخیره شد'));
     }
 
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.innerText = msg;
       t.style.display = 'block';
-      setTimeout(() => t.style.display = 'none', 3000);
+      setTimeout(() => t.style.display = 'none', 2500);
     }
   </script>
 </body>
