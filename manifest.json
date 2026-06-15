@@ -1,7 +1,7 @@
 {
-  "name": "همراه ناظر میدانی",
-  "short_name": "همراه ناظر",
-  "description": "سیستم پیشرفته و مستقل بازرسی میدانی آفلاین",
+  "name": "Hamrah_Nazer",
+  "short_name": "Hamnaz",
+  "description": "سیستم بازرسی میدانی آفلاین",
   "start_url": "index.html",
   "scope": ".",
   "display": "standalone",
