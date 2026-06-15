@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1565C0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Hamrah_Nazer</title>
+  <title>همراه ناظر میدانی</title>
   
   <link rel="manifest" href="manifest.json">
   
@@ -27,7 +27,7 @@
       --bg-color: #121212;
       --surface-color: #1e1e1e;
       --text-color: #e0e0e0;
-      --primary-color: #1565c0;
+      --primary-color: #90caf9;
       --border-color: #333333;
     }
 
@@ -456,8 +456,8 @@
 
     function initMap() {
       if (map) return;
-      map = L.map('map', { zoomControl: false }).setView(31.8974, 54.3569], 12);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'), { maxZoom: 19, attribution: '© OpenStreetMap'}).addTo(map);
+      map = L.map('map', { zoomControl: false }).setView(([31.8974, 54.3569], 12));
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
       markersGroup = L.layerGroup().addTo(map);
     }
 
