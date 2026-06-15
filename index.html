@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1565C0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>همراه ناظر میدانی</title>
+  <title>Hamrah_Nazer</title>
   
   <link rel="manifest" href="manifest.json">
   
@@ -27,7 +27,7 @@
       --bg-color: #121212;
       --surface-color: #1e1e1e;
       --text-color: #e0e0e0;
-      --primary-color: #90caf9;
+      --primary-color: #1565c0;
       --border-color: #333333;
     }
 
@@ -229,6 +229,8 @@
     }
 
     .target-chip.active { background: var(--primary-color); color: white; }
+    .target-chip.visited { background: #2e7d32; color: white; border-color: #2e7d32; }
+    .target-chip.current { background: #ef6c00; color: white; border-color: #ef6c00; }
 
     #toast {
       position: fixed;
@@ -242,6 +244,28 @@
       z-index: 2000;
       display: none;
     }
+
+    /* استایل دایره بوک‌مارک */
+    .custom-div-icon {
+      background: transparent;
+      border: none;
+    }
+    .marker-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      border: 2px solid white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .marker-circle.blue { background: #1565C0; }
+    .marker-circle.orange { background: #F57F17; }
+    .marker-circle.green { background: #2E7D32; }
   </style>
 </head>
 <body>
@@ -249,7 +273,7 @@
   <div id="toast">پیام سیستم</div>
 
   <header>
-    <div class="header-title" id="app-title">Hamrah_Nazer</div>
+    <div class="header-title" id="app-title">همراه ناظر</div>
     <div class="header-actions">
       <button class="btn-icon" id="theme-toggle"><i class="fas fa-moon"></i></button>
       <button class="btn-icon hidden" id="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
@@ -277,9 +301,9 @@
 
       <div id="panel">
         <div id="upload-section">
-          <label style="font-weight: bold; display:block; margin-bottom:8px;">Apload Excel:</label>
+          <label style="font-weight: bold; display:block; margin-bottom:8px;">آپلود Excel:</label>
           <input type="file" id="excel-file" accept=".csv, .xlsx, .xls" />
-          <p style="font-size:0.8rem; color:#757575;">The order of the columns: name، lon، lat، Description، img-1، img-2، img-3</p>
+          <p style="font-size:0.8rem; color:#757575;">ترتیب ستون‌ها: name, lon, lat, Description, img-1, img-2, img-3</p>
         </div>
 
         <div id="inspection-section" class="hidden">
@@ -307,8 +331,8 @@
 
             <div id="inspector-inputs" class="hidden">
               <div style="display:flex; gap: 5px; margin-top: 10px; margin-bottom: 8px;">
-                <button class="btn-action btn-success" onclick="updateStatus('done')"><i class="fas fa-check"></i> انجام شد</button>
-                <button class="btn-action btn-warning" onclick="updateStatus('review')"><i class="fas fa-exclamation-triangle"></i> نیاز به بررسی</button>
+                <button class="btn-action btn-success" id="mark-done-btn"><i class="fas fa-check"></i> انجام شد</button>
+                <button class="btn-action btn-warning" id="mark-review-btn"><i class="fas fa-exclamation-triangle"></i> نیاز به بررسی</button>
               </div>
               <textarea id="loc-note" placeholder="یادداشت ناظر برای این لوکیشن..."></textarea>
             </div>
@@ -342,10 +366,13 @@
     let currentUser = null;
     let locations = [];
     let selectedIndex = null;
+    let currentInspectionIndex = 0;  // اندیس فعلی برای بازرسی (برای حرکت خودکار)
     let map, markersGroup;
     let timerInterval;
     let totalSeconds = 0;
     let isPaused = false;
+    let userMarker = null;        // مارکر قرمز موقعیت کاربر
+    let watchPositionId = null;   // ID برای ردیابی GPS
 
     const loginScreen = document.getElementById('login-screen');
     const mainScreen = document.getElementById('main-screen');
@@ -405,11 +432,26 @@
         const parsed = JSON.parse(savedData);
         locations = parsed.locations || [];
         totalSeconds = parsed.totalSeconds || 0;
+        currentInspectionIndex = parsed.currentInspectionIndex || 0;
         if(locations.length > 0) {
           renderWorkspace();
           startTimer();
+          // اگر نقطه فعلی وجود دارد، آن را انتخاب کن
+          if(currentInspectionIndex < locations.length && locations[currentInspectionIndex].status === 'pending') {
+            selectLocation(currentInspectionIndex);
+          } else {
+            // اولین نقطه در انتظار را پیدا کن
+            const firstPending = locations.findIndex(l => l.status === 'pending');
+            if(firstPending !== -1) {
+              currentInspectionIndex = firstPending;
+              selectLocation(currentInspectionIndex);
+            }
+          }
         }
       }
+      
+      // شروع ردیابی موقعیت کاربر
+      startUserTracking();
     }
 
     function initMap() {
@@ -417,6 +459,43 @@
       map = L.map('map', { zoomControl: false }).setView([35.6892, 51.3890], 12);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
       markersGroup = L.layerGroup().addTo(map);
+    }
+
+    // ===== ردیابی موقعیت کاربر با مارکر قرمز =====
+    function startUserTracking() {
+      if (!navigator.geolocation) {
+        console.log('Geolocation not supported');
+        return;
+      }
+      
+      watchPositionId = navigator.geolocation.watchPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          if (userMarker) {
+            userMarker.setLatLng([lat, lng]);
+          } else {
+            // ایجاد مارکر قرمز دایره‌ای برای موقعیت کاربر
+            userMarker = L.circleMarker([lat, lng], {
+              radius: 12,
+              color: '#ff0000',
+              fillColor: '#ff0000',
+              fillOpacity: 0.8,
+              weight: 3,
+              opacity: 1
+            }).addTo(map).bindPopup('📍 موقعیت فعلی شما');
+          }
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 5000,
+          timeout: 10000
+        }
+      );
     }
 
     // ===== EXCEL =====
@@ -443,8 +522,8 @@
         locations.push({
           id: 'loc_' + i,
           name: r[0],
-          lat: parseFloat(r[1]),
-          lon: parseFloat(r[2]),
+          lon: parseFloat(r[1]),   // توجه: lon اول، lat دوم
+          lat: parseFloat(r[2]),
           desc: r[3] || 'بدون توضیحات',
           img1: r[4] || '',
           img2: r[5] || '',
@@ -455,9 +534,12 @@
       }
       
       if(locations.length > 0) {
+        currentInspectionIndex = 0;
         saveProgressLocally();
         renderWorkspace();
         startTimer();
+        // انتخاب اولین نقطه
+        selectLocation(0);
       } else {
         showToast('فرمت فایل اکسل معتبر نیست!');
       }
@@ -467,36 +549,53 @@
       if(!currentUser) return;
       localStorage.setItem(`hamnaz_track_${currentUser}`, JSON.stringify({
         locations: locations,
-        totalSeconds: totalSeconds
+        totalSeconds: totalSeconds,
+        currentInspectionIndex: currentInspectionIndex
       }));
+    }
+
+    // ===== ساخت مارکر دایره‌ای با شماره و رنگ وضعیت =====
+    function createCircleMarker(loc, idx, isCurrent, isVisited) {
+      let colorClass = 'blue';
+      if (isVisited) colorClass = 'green';
+      else if (isCurrent) colorClass = 'orange';
+      
+      const icon = L.divIcon({
+        html: `<div class="marker-circle ${colorClass}">${idx + 1}</div>`,
+        className: 'custom-div-icon',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+      
+      return L.marker([loc.lat, loc.lon], { icon });
     }
 
     // ===== RENDER =====
     function renderWorkspace() {
       uploadSection.classList.add('hidden');
       inspectionSection.classList.remove('hidden');
-      markersGroup.clearLayers();
+      
+      // پاک کردن لایه قدیمی
+      if (markersGroup) {
+        markersGroup.clearLayers();
+      }
+      
       targetChips.innerHTML = '';
 
       locations.forEach((loc, idx) => {
+        const isVisited = loc.status === 'done';
+        const isCurrent = (idx === currentInspectionIndex && loc.status === 'pending');
+        
+        // ایجاد چیپ (دکمه متنی)
         const chip = document.createElement('div');
-        chip.className = `target-chip ${selectedIndex === idx ? 'active' : ''}`;
-        chip.innerText = loc.name;
+        chip.className = `target-chip ${selectedIndex === idx ? 'active' : ''} ${isVisited ? 'visited' : ''} ${isCurrent ? 'current' : ''}`;
+        chip.innerText = `${idx + 1}. ${loc.name}`;
         chip.addEventListener('click', () => selectLocation(idx));
         targetChips.appendChild(chip);
 
-        let markerColor = '#ffe082'; 
-        if(loc.status === 'done') markerColor = '#4caf50'; 
-        if(loc.status === 'review') markerColor = '#ff9800'; 
-
-        const customMarker = L.divIcon({
-          html: `<i class="fas fa-map-marker-alt" style="color: ${markerColor}; font-size: 26px; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.4));"></i>`,
-          className: 'custom-pin',
-          iconSize: [26, 26],
-          iconAnchor: [13, 26]
-        });
-
-        const marker = L.marker([loc.lat, loc.lon], { icon: customMarker }).addTo(markersGroup);
+        // ایجاد مارکر دایره‌ای روی نقشه
+        const marker = createCircleMarker(loc, idx, isCurrent, isVisited);
+        marker.addTo(markersGroup);
         marker.on('click', () => selectLocation(idx));
       });
 
@@ -506,16 +605,32 @@
         const bounds = locations.map(l => [l.lat, l.lon]);
         map.fitBounds(bounds, { padding: [40, 40] });
       }
+      
+      // به‌روزرسانی چیپ فعلی در صورت نیاز
+      updateCurrentChip();
+    }
+
+    function updateCurrentChip() {
+      // برجسته کردن چیپ فعلی در نوار بالایی
+      const chips = document.querySelectorAll('.target-chip');
+      chips.forEach((chip, idx) => {
+        chip.classList.remove('current');
+        if (idx === currentInspectionIndex && locations[idx].status === 'pending') {
+          chip.classList.add('current');
+        }
+      });
     }
 
     function selectLocation(idx) {
       selectedIndex = idx;
-      renderWorkspace();
+      renderWorkspace(); // باعث می‌شود چیپ فعال شود
       const loc = locations[idx];
       map.setView([loc.lat, loc.lon], 16);
+      updateDetailPanel();
     }
 
     function updateDetailPanel() {
+      if (selectedIndex === null) return;
       const loc = locations[selectedIndex];
       document.getElementById('loc-name').innerText = loc.name;
       document.getElementById('loc-desc').innerText = "توضیحات: " + loc.desc;
@@ -532,7 +647,7 @@
           const img = document.createElement('img');
           img.src = url;
           img.className = 'thumb-img';
-          img.onerror = () => { img.style.display = 'none'; }; // خطای لینک خراب
+          img.onerror = () => { img.style.display = 'none'; };
           img.onclick = () => window.open(url, '_blank');
           imgGallery.appendChild(img);
         }
@@ -550,12 +665,43 @@
 
     function updateStatus(newStatus) {
       if(selectedIndex === null) return;
+      
+      // ذخیره وضعیت نقطه فعلی
       locations[selectedIndex].status = newStatus;
       locations[selectedIndex].note = document.getElementById('loc-note').value;
       saveProgressLocally();
-      renderWorkspace();
-      showToast('ثبت شد');
+      
+      showToast(newStatus === 'done' ? '✓ انجام شد' : '⚠️ نیاز به بررسی ثبت شد');
+      
+      // پیدا کردن نقطه بعدی که وضعیت pending دارد
+      let nextIndex = -1;
+      for (let i = 0; i < locations.length; i++) {
+        if (locations[i].status === 'pending') {
+          nextIndex = i;
+          break;
+        }
+      }
+      
+      if (nextIndex !== -1) {
+        // حرکت به نقطه بعدی
+        currentInspectionIndex = nextIndex;
+        selectedIndex = currentInspectionIndex;
+        renderWorkspace();
+        const nextLoc = locations[currentInspectionIndex];
+        map.setView([nextLoc.lat, nextLoc.lon], 16);
+        updateDetailPanel();
+        showToast(`📍 رفتن به نقطه بعدی: ${nextLoc.name}`);
+      } else {
+        // همه نقاط بررسی شدند
+        showToast('🎉 تبریک! همه نقاط بازرسی شدند.');
+        currentInspectionIndex = -1;
+        renderWorkspace();
+      }
     }
+
+    // ===== دکمه‌های وضعیت =====
+    document.getElementById('mark-done-btn').addEventListener('click', () => updateStatus('done'));
+    document.getElementById('mark-review-btn').addEventListener('click', () => updateStatus('review'));
 
     // ===== TIMER =====
     function startTimer() {
