@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1565C0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>همراه ناظر میدانی</title>
+  <title>Hamrah_Nazer</title>
   
   <link rel="manifest" href="manifest.json">
   
@@ -456,11 +456,35 @@
 
     function initMap() {
       if (map) return;
-      map = L.map('map', { zoomControl: false }).setView(([31.8974, 54.3569], 12));
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-      markersGroup = L.layerGroup().addTo(map);
+      const YAZD_CENTER = [31.8974, 54.3569];
+  const DEFAULT_ZOOM = 13; // زوم کمتر = تایل‌های کمتری لود می‌شود
+  
+  map = L.map('map', { 
+    zoomControl: false,
+    fadeAnimation: false,    // غیرفعال کردن انیمیشن برای سرعت بیشتر
+    zoomAnimation: false,
+    markerZoomAnimation: false
+  }).setView(YAZD_CENTER, DEFAULT_ZOOM);
+  
+  // 🔥 سریع‌ترین Tile Server برای ایران
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© CartoDB',
+    subdomains: 'abcd',
+    maxZoom: 19,
+    minZoom: 10,
+    detectRetina: false,
+    crossOrigin: false
+  }).addTo(map);
+  
+  markersGroup = L.layerGroup().addTo(map);
+  
+  // بارگذاری فقط تایل‌های لازم (منطقه یزد)
+  setTimeout(() => {
+    if (locations.length === 0) {
+      map.setView(YAZD_CENTER, 12);
     }
-
+  }, 100);
+}
     // ===== ردیابی موقعیت کاربر با مارکر قرمز =====
     function startUserTracking() {
       if (!navigator.geolocation) {
