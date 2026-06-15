@@ -425,26 +425,19 @@
     const totalTimerText = document.getElementById('total-timer');
     const pauseResumeBtn = document.getElementById('pause-resume-btn');
 
-    // ========== تابع جدید: استخراج عدد از نام ==========
-    // ورودی: یک رشته مثل "نقطه 123" یا "پست 456" یا "A123B"
-    // خروجی: اولین عدد پیدا شده (مثلاً 123 یا 456) بین 0 تا 500
-    // اگر عددی نبود، null برمی‌گرداند
+    // تابع استخراج عدد از نام
     function extractNumberFromName(name) {
       if (!name) return null;
-      // پیدا کردن همه اعداد در رشته (با پشتیبانی از اعشار و اعداد منفی اما ما فقط عدد صحیح می‌خواهیم)
       const matches = name.toString().match(/\d+/g);
       if (matches && matches.length > 0) {
         let num = parseInt(matches[0], 10);
-        // محدود کردن بین 0 تا 500 (اختیاری)
         if (num < 0) num = 0;
         if (num > 500) num = 500;
         return num;
       }
       return null;
     }
-    // ===============================================
 
-    // تابع برای ایجاد تصویر placeholder هنگام خطا
     function createImageWithFallback(url, className, altText = 'تصویر') {
       const img = document.createElement('img');
       img.src = url;
@@ -464,11 +457,9 @@
       if (!url || url.trim() === '') {
         handleImageError();
       }
-      
       return img;
     }
 
-    // Theme
     themeToggle.addEventListener('click', () => {
       const currentTheme = document.documentElement.getAttribute('data-theme');
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -476,7 +467,6 @@
       themeToggle.innerHTML = newTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
     });
 
-    // Login
     document.getElementById('do-login').addEventListener('click', () => {
       const user = document.getElementById('login-user').value.trim();
       const pass = document.getElementById('login-pass').value;
@@ -626,7 +616,6 @@
         if(!r[0] || !r[1] || !r[2]) continue;
         
         const rawName = r[0].toString();
-        // استخراج عدد بوک‌مارک از نام
         const bookmarkNumber = extractNumberFromName(rawName);
         
         locations.push({
@@ -640,7 +629,7 @@
           img3: r[6] || '',
           status: 'pending', 
           note: '',
-          bookmarkNumber: bookmarkNumber  // ذخیره عدد بوک‌مارک
+          bookmarkNumber: bookmarkNumber
         });
       }
       if(locations.length > 0) {
@@ -662,13 +651,10 @@
       }));
     }
 
-    // تابع کمکی برای گرفتن متن نمایشی روی مارکر
     function getMarkerDisplayNumber(loc, idx) {
-      // اگر عدد بوک‌مارک وجود دارد و بین 0 تا 500 است، از آن استفاده کن
       if (loc.bookmarkNumber !== null && loc.bookmarkNumber !== undefined) {
         return loc.bookmarkNumber.toString();
       }
-      // در غیر این صورت از اندیس (شماره ردیف) استفاده کن
       return (idx + 1).toString();
     }
 
@@ -696,7 +682,6 @@
         const isVisited = loc.status === 'done';
         const isCurrent = (idx === currentInspectionIndex && loc.status === 'pending');
         
-        // نمایش در چیپ‌ها: عدد بوک‌مارک + نام (اختیاری)
         const chipNumber = getMarkerDisplayNumber(loc, idx);
         const chipTitle = loc.bookmarkNumber !== null ? `${chipNumber} - ${loc.name}` : `${idx+1}. ${loc.name}`;
         
@@ -827,7 +812,7 @@
     });
 
     document.getElementById('reset-track-btn').addEventListener('click', () => {
-      if(confirm('پاک شود؟')) {
+      if(confirm('آیا از حذف تمام داده‌ها مطمئن هستید؟')) {
         localStorage.removeItem(`hamnaz_track_${currentUser}`);
         location.reload();
       }
@@ -842,4 +827,30 @@
       showToast('📄 در حال ساخت PDF...');
       const element = document.createElement('div');
       element.style.padding = '20px';
-      element.style.direction
+      element.style.direction = 'rtl';
+      element.style.fontFamily = 'Vazirmatn, sans-serif';
+      let rowsHtml = '';
+      locations.forEach((loc, i) => {
+        const displayNum = getMarkerDisplayNumber(loc, i);
+        let statusText = loc.status === 'done' ? 'انجام شده' : (loc.status === 'review' ? 'نیاز به بررسی' : 'بازرسی نشده');
+        rowsHtml += `<tr style="border-bottom:1px solid #ccc;"><td style="padding:8px;">${displayNum} - ${loc.name}</td><td style="padding:8px;">${statusText}</td><td style="padding:8px;">${loc.note || '—'}<\/td><\/tr>`;
+      });
+      element.innerHTML = `
+        <div style="border:2px solid #1565c0; padding:15px; border-radius:8px;">
+          <h2 style="text-align:center; color:#1565c0;">گزارش بازرسی</h2>
+          <div style="display:flex; justify-content:space-between; margin:10px 0;"><b>ناظر:</b> ${currentUser} <b>زمان:</b> ${totalTimerText.innerText}</div>
+          <table style="width:100%; border-collapse:collapse;">${rowsHtml}<\/table>
+        <\/div>
+      `;
+      html2pdf().from(element).set({ margin: 8, filename: `Report_${currentUser}_${new Date().toISOString().slice(0,10)}.pdf` }).save().then(() => showToast('✅ PDF ذخیره شد'));
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 2500);
+    }
+  </script>
+</body>
+</html>
