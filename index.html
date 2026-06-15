@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1565C0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Hamrah_Nazer</title>
+  <title>همراه ناظر میدانی</title>
   
   <link rel="manifest" href="manifest.json">
   
@@ -27,8 +27,12 @@
       --bg-color: #121212;
       --surface-color: #1e1e1e;
       --text-color: #e0e0e0;
-      --primary-color: #1565c0;
+      --primary-color: #1565c0;  /* آبی ثابت در دارک مود */
       --border-color: #333333;
+    }
+
+    [data-theme="dark"] header {
+      background-color: var(--primary-color);
     }
 
     body {
@@ -121,12 +125,6 @@
 
     #map { flex: 1; z-index: 1; }
 
-    /* استایل نقشه در حالت دارک مود */
-    [data-theme="dark"] .leaflet-layer,
-    [data-theme="dark"] .leaflet-control-zoom {
-      filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-    }
-
     #panel {
       background: var(--surface-color);
       border-top: 1px solid var(--border-color);
@@ -164,6 +162,7 @@
     .btn-warning { background: #ef6c00; color: white; }
     .btn-danger { background: #c62828; color: white; }
     .btn-secondary { background: #757575; color: white; }
+    .btn-primary { background: #1565c0; color: white; }
 
     .location-details {
       border: 1px solid var(--border-color);
@@ -266,6 +265,15 @@
     .marker-circle.blue { background: #1565C0; }
     .marker-circle.orange { background: #F57F17; }
     .marker-circle.green { background: #2E7D32; }
+
+    .sort-btn-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .sort-btn-container .btn-action {
+      flex: 1;
+    }
   </style>
 </head>
 <body>
@@ -318,6 +326,12 @@
             </div>
           </div>
 
+          <div class="sort-btn-container">
+            <button class="btn-action btn-primary" id="sort-route-btn">
+              <i class="fas fa-sort-amount-down"></i> مرتب‌سازی مسیر (نزدیک‌ترین اول)
+            </button>
+          </div>
+
           <div class="target-selector" id="target-chips"></div>
 
           <div class="location-details" id="current-loc-details">
@@ -356,7 +370,7 @@
     }
 
     // ==========================================
-    // 🔑 پایگاه داده ناظران (تعریف نام کاربری و رمزها)
+    // 🔑 پایگاه داده ناظران
     // ==========================================
     const USERS_DATABASE = {
       "Mehdi": "2525800",
@@ -366,13 +380,15 @@
     let currentUser = null;
     let locations = [];
     let selectedIndex = null;
-    let currentInspectionIndex = 0;  // اندیس فعلی برای بازرسی (برای حرکت خودکار)
+    let currentInspectionIndex = 0;
     let map, markersGroup;
     let timerInterval;
     let totalSeconds = 0;
     let isPaused = false;
-    let userMarker = null;        // مارکر قرمز موقعیت کاربر
-    let watchPositionId = null;   // ID برای ردیابی GPS
+    let userMarker = null;
+    let watchPositionId = null;
+    let userLat = null;
+    let userLon = null;
 
     const loginScreen = document.getElementById('login-screen');
     const mainScreen = document.getElementById('main-screen');
@@ -419,6 +435,63 @@
       location.reload();
     });
 
+    // ===== تابع محاسبه فاصله (Haversine) =====
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    // ===== مرتب‌سازی نقاط بر اساس نزدیک‌ترین فاصله =====
+    function sortLocationsByDistance() {
+      if (!userLat || !userLon) {
+        showToast('⚠️ ابتدا موقعیت شما مشخص نشده است! لطفاً چند ثانیه صبر کنید.');
+        return;
+      }
+      
+      if (locations.length === 0) {
+        showToast('⚠️ هیچ نقطه‌ای برای مرتب‌سازی وجود ندارد!');
+        return;
+      }
+      
+      showToast('🔄 در حال مرتب‌سازی مسیر بر اساس نزدیک‌ترین فاصله...');
+      
+      const locationsWithDistance = locations.map((loc, index) => {
+        const distance = calculateDistance(userLat, userLon, loc.lat, loc.lon);
+        return { ...loc, originalIndex: index, distance };
+      });
+      
+      locationsWithDistance.sort((a, b) => a.distance - b.distance);
+      
+      const newLocations = locationsWithDistance.map(item => ({
+        id: item.id,
+        name: item.name,
+        lon: item.lon,
+        lat: item.lat,
+        desc: item.desc,
+        img1: item.img1,
+        img2: item.img2,
+        img3: item.img3,
+        status: item.status,
+        note: item.note
+      }));
+      
+      locations = newLocations;
+      currentInspectionIndex = 0;
+      selectedIndex = 0;
+      
+      saveProgressLocally();
+      renderWorkspace();
+      selectLocation(0);
+      
+      showToast(`✅ مسیر مرتب شد! نزدیک‌ترین نقطه: ${locations[0].name}`);
+    }
+
     function initMainWorkspace() {
       loginScreen.classList.add('hidden');
       mainScreen.classList.remove('hidden');
@@ -426,7 +499,6 @@
       
       initMap();
       
-      // بازیابی هوشمند حافظه مسیر نیمه‌کاره روزهای قبل
       const savedData = localStorage.getItem(`hamnaz_track_${currentUser}`);
       if(savedData) {
         const parsed = JSON.parse(savedData);
@@ -436,11 +508,9 @@
         if(locations.length > 0) {
           renderWorkspace();
           startTimer();
-          // اگر نقطه فعلی وجود دارد، آن را انتخاب کن
           if(currentInspectionIndex < locations.length && locations[currentInspectionIndex].status === 'pending') {
             selectLocation(currentInspectionIndex);
           } else {
-            // اولین نقطه در انتظار را پیدا کن
             const firstPending = locations.findIndex(l => l.status === 'pending');
             if(firstPending !== -1) {
               currentInspectionIndex = firstPending;
@@ -450,42 +520,28 @@
         }
       }
       
-      // شروع ردیابی موقعیت کاربر
       startUserTracking();
     }
 
     function initMap() {
       if (map) return;
+      
+      // 🗺️ مختصات شهر یزد (برای لود سریع‌تر با کیفیت بالا)
       const YAZD_CENTER = [31.8974, 54.3569];
-  const DEFAULT_ZOOM = 13; // زوم کمتر = تایل‌های کمتری لود می‌شود
-  
-  map = L.map('map', { 
-    zoomControl: false,
-    fadeAnimation: false,    // غیرفعال کردن انیمیشن برای سرعت بیشتر
-    zoomAnimation: false,
-    markerZoomAnimation: false
-  }).setView(YAZD_CENTER, DEFAULT_ZOOM);
-  
-  // 🔥 سریع‌ترین Tile Server برای ایران
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© CartoDB',
-    subdomains: 'abcd',
-    maxZoom: 19,
-    minZoom: 10,
-    detectRetina: false,
-    crossOrigin: false
-  }).addTo(map);
-  
-  markersGroup = L.layerGroup().addTo(map);
-  
-  // بارگذاری فقط تایل‌های لازم (منطقه یزد)
-  setTimeout(() => {
-    if (locations.length === 0) {
-      map.setView(YAZD_CENTER, 12);
+      const DEFAULT_ZOOM = 13;
+      
+      map = L.map('map', { zoomControl: true }).setView(YAZD_CENTER, DEFAULT_ZOOM);
+      
+      // استفاده از سرور با کیفیت بالا
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
+        subdomains: ['a', 'b', 'c']
+      }).addTo(map);
+      
+      markersGroup = L.layerGroup().addTo(map);
     }
-  }, 100);
-}
-    // ===== ردیابی موقعیت کاربر با مارکر قرمز =====
+
     function startUserTracking() {
       if (!navigator.geolocation) {
         console.log('Geolocation not supported');
@@ -494,14 +550,13 @@
       
       watchPositionId = navigator.geolocation.watchPosition(
         (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
+          userLat = position.coords.latitude;
+          userLon = position.coords.longitude;
           
           if (userMarker) {
-            userMarker.setLatLng([lat, lng]);
+            userMarker.setLatLng([userLat, userLon]);
           } else {
-            // ایجاد مارکر قرمز دایره‌ای برای موقعیت کاربر
-            userMarker = L.circleMarker([lat, lng], {
+            userMarker = L.circleMarker([userLat, userLon], {
               radius: 12,
               color: '#ff0000',
               fillColor: '#ff0000',
@@ -522,7 +577,6 @@
       );
     }
 
-    // ===== EXCEL =====
     document.getElementById('excel-file').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -546,7 +600,7 @@
         locations.push({
           id: 'loc_' + i,
           name: r[0],
-          lon: parseFloat(r[1]),   // توجه: lon اول، lat دوم
+          lon: parseFloat(r[1]),
           lat: parseFloat(r[2]),
           desc: r[3] || 'بدون توضیحات',
           img1: r[4] || '',
@@ -562,8 +616,8 @@
         saveProgressLocally();
         renderWorkspace();
         startTimer();
-        // انتخاب اولین نقطه
         selectLocation(0);
+        showToast(`✅ ${locations.length} نقطه بارگذاری شد. برای مرتب‌سازی مسیر روی دکمه کلیک کنید.`);
       } else {
         showToast('فرمت فایل اکسل معتبر نیست!');
       }
@@ -578,7 +632,6 @@
       }));
     }
 
-    // ===== ساخت مارکر دایره‌ای با شماره و رنگ وضعیت =====
     function createCircleMarker(loc, idx, isCurrent, isVisited) {
       let colorClass = 'blue';
       if (isVisited) colorClass = 'green';
@@ -594,12 +647,10 @@
       return L.marker([loc.lat, loc.lon], { icon });
     }
 
-    // ===== RENDER =====
     function renderWorkspace() {
       uploadSection.classList.add('hidden');
       inspectionSection.classList.remove('hidden');
       
-      // پاک کردن لایه قدیمی
       if (markersGroup) {
         markersGroup.clearLayers();
       }
@@ -610,14 +661,12 @@
         const isVisited = loc.status === 'done';
         const isCurrent = (idx === currentInspectionIndex && loc.status === 'pending');
         
-        // ایجاد چیپ (دکمه متنی)
         const chip = document.createElement('div');
         chip.className = `target-chip ${selectedIndex === idx ? 'active' : ''} ${isVisited ? 'visited' : ''} ${isCurrent ? 'current' : ''}`;
         chip.innerText = `${idx + 1}. ${loc.name}`;
         chip.addEventListener('click', () => selectLocation(idx));
         targetChips.appendChild(chip);
 
-        // ایجاد مارکر دایره‌ای روی نقشه
         const marker = createCircleMarker(loc, idx, isCurrent, isVisited);
         marker.addTo(markersGroup);
         marker.on('click', () => selectLocation(idx));
@@ -630,12 +679,10 @@
         map.fitBounds(bounds, { padding: [40, 40] });
       }
       
-      // به‌روزرسانی چیپ فعلی در صورت نیاز
       updateCurrentChip();
     }
 
     function updateCurrentChip() {
-      // برجسته کردن چیپ فعلی در نوار بالایی
       const chips = document.querySelectorAll('.target-chip');
       chips.forEach((chip, idx) => {
         chip.classList.remove('current');
@@ -647,7 +694,7 @@
 
     function selectLocation(idx) {
       selectedIndex = idx;
-      renderWorkspace(); // باعث می‌شود چیپ فعال شود
+      renderWorkspace();
       const loc = locations[idx];
       map.setView([loc.lat, loc.lon], 16);
       updateDetailPanel();
@@ -663,7 +710,6 @@
       statusBadge.innerText = loc.status === 'done' ? 'انجام شده' : (loc.status === 'review' ? 'نیازمند بررسی' : 'در انتظار بازرسی');
       statusBadge.className = `status-badge status-${loc.status}`;
 
-      // رندر گالری تصاویر محلی
       const imgGallery = document.getElementById('loc-images');
       imgGallery.innerHTML = '';
       [loc.img1, loc.img2, loc.img3].forEach(url => {
@@ -690,14 +736,12 @@
     function updateStatus(newStatus) {
       if(selectedIndex === null) return;
       
-      // ذخیره وضعیت نقطه فعلی
       locations[selectedIndex].status = newStatus;
       locations[selectedIndex].note = document.getElementById('loc-note').value;
       saveProgressLocally();
       
       showToast(newStatus === 'done' ? '✓ انجام شد' : '⚠️ نیاز به بررسی ثبت شد');
       
-      // پیدا کردن نقطه بعدی که وضعیت pending دارد
       let nextIndex = -1;
       for (let i = 0; i < locations.length; i++) {
         if (locations[i].status === 'pending') {
@@ -707,7 +751,6 @@
       }
       
       if (nextIndex !== -1) {
-        // حرکت به نقطه بعدی
         currentInspectionIndex = nextIndex;
         selectedIndex = currentInspectionIndex;
         renderWorkspace();
@@ -716,18 +759,16 @@
         updateDetailPanel();
         showToast(`📍 رفتن به نقطه بعدی: ${nextLoc.name}`);
       } else {
-        // همه نقاط بررسی شدند
         showToast('🎉 تبریک! همه نقاط بازرسی شدند.');
         currentInspectionIndex = -1;
         renderWorkspace();
       }
     }
 
-    // ===== دکمه‌های وضعیت =====
     document.getElementById('mark-done-btn').addEventListener('click', () => updateStatus('done'));
     document.getElementById('mark-review-btn').addEventListener('click', () => updateStatus('review'));
+    document.getElementById('sort-route-btn').addEventListener('click', () => sortLocationsByDistance());
 
-    // ===== TIMER =====
     function startTimer() {
       if(timerInterval) return;
       timerInterval = setInterval(() => {
@@ -764,7 +805,6 @@
       }
     });
 
-    // ===== PDF GENERATION =====
     document.getElementById('finish-inspection-btn').addEventListener('click', () => {
       saveProgressLocally();
       generatePDFReport();
@@ -804,7 +844,7 @@
                 <th style="padding:12px; text-align:right; width:30%;">موقعیت / دکل</th>
                 <th style="padding:12px; text-align:center; width:25%;">وضعیت نهایی</th>
                 <th style="padding:12px; text-align:right; width:45%;">مشاهدات و گزارش مکتوب ناظر</th>
-              </tr>
+              </table>
             </thead>
             <tbody>
               ${rowsHtml}
