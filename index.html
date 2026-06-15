@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1565C0">
+  <title>همراه ناظر - نسخه پیشرفته</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/vazirmatn-with-font-face.css" />
+
+  <style>
+    :root {
+      --bg-color: #f5f7fb;
+      --surface-color: #ffffff;
+      --text-color: #212121;
+      --primary-color: #1565c0;
+      --border-color: #e0e0e0;
+      --accent-color: #ff9800;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --surface-color: #1e1e1e;
+      --text-color: #e0e0e0;
+      --primary-color: #90caf9;
+      --border-color: #333333;
+      --accent-color: #ffb74d;
+    }
+
+    body {
+      margin: 0;
+      font-family: Vazirmatn, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--primary-color);
+      color: #fff;
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+
+    .header-title { font-weight: bold; font-size: 1.1rem; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+    
+    .btn-icon {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    #login-screen, #main-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 50px);
+    }
+
+    .hidden { display: none !important; }
+
+    /* Login Form Styles */
+    .login-container {
+      margin: auto;
+      background: var(--surface-color);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 85%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      text-align: right;
+    }
+
+    .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      box-sizing: border-box;
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    .btn-block {
+      width: 100%;
+      padding: 12px;
+      background: #1565c0;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* Main Grid layout */
+    #workspace {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      position: relative;
+    }
+
+    #map {
+      flex: 1;
+      z-index: 1;
+    }
+
+    /* Dark Mode Filter for Map Tiles */
+    [data-theme="dark"] .leaflet-layer,
+    [data-theme="dark"] .leaflet-control-zoom {
+      filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
+
+    /* Control Panel */
+    #panel {
+      background: var(--surface-color);
+      border-top: 1px solid var(--border-color);
+      padding: 15px;
+      max-height: 45vh;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 -3px 10px rgba(0,0,0,0.05);
+    }
+
+    .timer-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-color);
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .timer-digits { font-family: monospace; font-size: 1.3rem; font-weight: bold; }
+
+    .btn-action {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-success { background: #2e7d32; color: white; }
+    .btn-warning { background: #ef6c00; color: white; }
+    .btn-danger { background: #c62828; color: white; }
+    .btn-secondary { background: #757575; color: white; }
+
+    .location-details {
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .image-gallery {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+      overflow-x: auto;
+    }
+
+    .thumb-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .status-pending { background: #ffe082; color: #81c784; color: #b78103; }
+    .status-done { background: #c8e6c9; color: #2e7d32; }
+    .status-review { background: #ffcc80; color: #ef6c00; }
+
+    textarea {
+      width: 100%;
+      height: 60px;
+      margin-top: 8px;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    /* Navigation list */
+    .target-selector {
+      margin-top: 10px;
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .target-chip {
+      padding: 6px 12px;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .target-chip.active {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      z-index: 2000;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast">پیام سیستم</div>
+
+  <header>
+    <div class="header-title" id="app-title">همراه ناظر میدانی</div>
+    <div class="header-actions">
+      <button class="btn-icon" id="theme-toggle" title="تغییر پوسته"><i class="fas fa-moon"></i></button>
+      <button class="btn-icon hidden" id="logout-btn" title="خروج"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </header>
+
+  <div id="login-screen">
+    <div class="login-container">
+      <h3>ورود ناظر به سیستم</h3>
+      <div class="form-group">
+        <label>ایمیل یا نام کاربری:</label>
+        <input type="email" id="login-email" placeholder="example@email.com">
+      </div>
+      <div class="form-group">
+        <label>رمز عبور:</label>
+        <input type="password" id="login-pass" placeholder="******">
+      </div>
+      <button class="btn-block" id="do-login">ورود</button>
+    </div>
+  </div>
+
+  <div id="main-screen" class="hidden">
+    <div id="workspace">
+      <div id="map"></div>
+
+      <div id="panel">
+        
+        <div id="upload-section">
+          <label style="font-weight: bold; display:block; margin-bottom:8px;">بارگذاری مسیر جدید (Excel / CSV):</label>
+          <input type="file" id="excel-file" accept=".csv, .xlsx, .xls" />
+          <p style="font-size:0.8rem; color:#757575;">فایل باید دارای ۷ ستون (نام، لات، لون، توضیحات، عکس۱، عکس۲، عکس۳) باشد.</p>
+        </div>
+
+        <div id="inspection-section" class="hidden">
+          
+          <div class="timer-container">
+            <div>
+              <span style="font-size:0.85rem; display:block; color:#757575;">زمان کل بازرسی</span>
+              <div class="timer-digits" id="total-timer">00:00:00</div>
+            </div>
+            <div style="display:flex; gap: 5px;">
+              <button class="btn-action btn-warning" id="pause-resume-btn"><i class="fas fa-pause"></i> <span>توقف</span></button>
+              <button class="btn-action btn-danger" id="finish-inspection-btn"><i class="fas fa-flag-checkered"></i> اتمام نهایی</button>
+            </div>
+          </div>
+
+          <div class="target-selector" id="target-chips"></div>
+
+          <div class="location-details" id="current-loc-details">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 id="loc-name" style="margin:0;">انتخاب لوکیشن برای بازرسی...</h4>
+              <span class="status-badge status-pending" id="loc-status">نامشخص</span>
+            </div>
+            
+            <p id="loc-desc" style="font-size: 0.9rem; color: #666; margin: 8px 0;"></p>
+            
+            <div class="image-gallery" id="loc-images"></div>
+
+            <div id="inspector-inputs" class="hidden">
+              <div style="display:flex; gap: 5px; margin-top: 10px;">
+                <button class="btn-action btn-success" onclick="updateStatus('done')"><i class="fas fa-check"></i> انجام شد</button>
+                <button class="btn-action btn-warning" onclick="updateStatus('review')"><i class="fas fa-exclamation-triangle"></i> نیاز به بررسی</button>
+              </div>
+              <textarea id="loc-note" placeholder="یادداشت و گزارش ناظر برای این لوکیشن..."></textarea>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // تنظیمات کانفیگ فایربیس شما
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // مقداردهی اولیه فایربیس
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.auth = auth;
+    window.db = db;
+  </script>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <script>
+    // ===== STATE MANAGEMENT =====
+    let currentUser = null;
+    let locations = [];
+    let selectedIndex = null;
+    let map, markersGroup;
+    let timerInterval;
+    let totalSeconds = 0;
+    let isPaused = false;
+
+    // ===== UI ELEMENTS =====
+    const loginScreen = document.getElementById('login-screen');
+    const mainScreen = document.getElementById('main-screen');
+    const logoutBtn = document.getElementById('logout-btn');
+    const themeToggle = document.getElementById('theme-toggle');
+    const uploadSection = document.getElementById('upload-section');
+    const inspectionSection = document.getElementById('inspection-section');
+    const targetChips = document.getElementById('target-chips');
+    const totalTimerText = document.getElementById('total-timer');
+    const pauseResumeBtn = document.getElementById('pause-resume-btn');
+
+    // ===== DARK MODE =====
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      themeToggle.innerHTML = newTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    });
+
+    // ===== FIREBASE AUTH LISTENERS =====
+    document.getElementById('do-login').addEventListener('click', () => {
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-pass').value;
+      if(!email || !pass) return showToast('لطفاً فیلدها را پر کنید');
+      
+      window.auth && window.auth.signInWithEmailAndPassword ? 
+      window.auth.signInWithEmailAndPassword(window.auth, email, pass)
+        .catch(err => showToast('خطا در ورود: ' + err.message)) : showToast('درحال اتصال به فایربیس...');
+    });
+
+    setTimeout(() => {
+      if (window.auth) {
+        window.auth.onAuthStateChanged(window.auth, (user) => {
+          if (user) {
+            currentUser = user;
+            loginScreen.classList.add('hidden');
+            mainScreen.classList.remove('hidden');
+            logoutBtn.classList.remove('hidden');
+            initMap();
+            loadUserDataFromFirebase();
+          } else {
+            currentUser = null;
+            loginScreen.classList.remove('hidden');
+            mainScreen.classList.add('hidden');
+            logoutBtn.classList.add('hidden');
+          }
+        });
+      }
+    }, 1500);
+
+    logoutBtn.addEventListener('click', () => { window.auth.signOut(window.auth); });
+
+    // ===== MAP INITIALIZATION =====
+    function initMap() {
+      if (map) return;
+      map = L.map('map', { zoomControl: false }).setView([32.4279, 53.6880], 6); // مرکز ایران
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      }).addTo(map);
+      markersGroup = L.layerGroup().addTo(map);
+    }
+
+    // ===== EXCEL PARSING =====
+    document.getElementById('excel-file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        
+        processExcelData(json);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function processExcelData(rows) {
+      locations = [];
+      // صرف‌نظر کردن از سطر هدر در صورتی که متن باشد
+      const startIdx = isNaN(rows[0][1]) ? 1 : 0;
+      
+      for(let i = startIdx; i < rows.length; i++) {
+        const r = rows[i];
+        if(!r[0] || !r[1] || !r[2]) continue;
+        locations.push({
+          id: 'loc_' + i,
+          name: r[0],
+          lat: parseFloat(r[1]),
+          lon: parseFloat(r[2]),
+          desc: r[3] || 'بدون توضیحات اولیه',
+          img1: r[4] || '',
+          img2: r[5] || '',
+          img3: r[6] || '',
+          status: 'pending', // pending, done, review
+          note: ''
+        });
+      }
+      
+      if(locations.length > 0) {
+        saveDataToFirebase();
+        renderWorkspace();
+      } else {
+        showToast('هیچ داده معتبری در اکسل پیدا نشد.');
+      }
+    }
+
+    // ===== SYNC WITH FIREBASE =====
+    function saveDataToFirebase() {
+      if(!currentUser || !window.db) return;
+      const docRef = window.doc(window.db, "inspections", currentUser.uid);
+      window.setDoc(docRef, {
+        locations: locations,
+        totalSeconds: totalSeconds,
+        timestamp: Date.now()
+      }).then(() => showToast('داده‌ها در فایربیس ذخیره شدند'));
+    }
+
+    function loadUserDataFromFirebase() {
+      if(!currentUser || !window.db) return;
+      const docRef = window.doc(window.db, "inspections", currentUser.uid);
+      window.getDoc(docRef).then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          locations = data.locations || [];
+          totalSeconds = data.totalSeconds || 0;
+          if(locations.length > 0) {
+            renderWorkspace();
+            startTimer();
+          }
+        }
+      });
+    }
+
+    // ===== RENDER WORKSPACE =====
+    function renderWorkspace() {
+      uploadSection.classList.add('hidden');
+      inspectionSection.classList.remove('hidden');
+      
+      markersGroup.clearLayers();
+      targetChips.innerHTML = '';
+
+      locations.forEach((loc, idx) => {
+        // ۱. ساخت دکمه‌های ناوبری سریع چلیپایی (Chips)
+        const chip = document.createElement('div');
+        chip.className = `target-chip ${selectedIndex === idx ? 'active' : ''}`;
+        chip.innerText = loc.name;
+        chip.addEventListener('click', () => selectLocation(idx));
+        targetChips.appendChild(chip);
+
+        // ۲. رنگ مارکر بر اساس وضعیت
+        let markerColor = '#ffe082'; // Pending (Zard)
+        if(loc.status === 'done') markerColor = '#4caf50'; // Green
+        if(loc.status === 'review') markerColor = '#ff9800'; // Orange
+
+        const customMarker = L.divIcon({
+          html: `<i class="fas fa-location-pin" style="color: ${markerColor}; font-size: 24px; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.4));"></i>`,
+          className: 'custom-pin',
+          iconSize: [24, 24],
+          iconAnchor: [12, 24]
+        });
+
+        const marker = L.marker([loc.lat, loc.lon], { icon: customMarker }).addTo(markersGroup);
+        marker.on('click', () => selectLocation(idx));
+      });
+
+      if(selectedIndex !== null) {
+        updateDetailPanel();
+      } else if(locations.length > 0) {
+        // فوکوس روی کل محدوده نقاط روی نقشه در ابتدا
+        const bounds = locations.map(l => [l.lat, l.lon]);
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
+    }
+
+    // ===== SELECT LOCATION (آزادی در جابجایی بین اهداف) =====
+    function selectLocation(idx) {
+      selectedIndex = idx;
+      
+      // هایلایت کردن چلیپای انتخاب شده
+      document.querySelectorAll('.target-chip').forEach((c, i) => {
+        c.classList.toggle('active', i === idx);
+      });
+
+      const loc = locations[idx];
+      map.setView([loc.lat, loc.lon], 16);
+      updateDetailPanel();
+      startTimer(); // مطمئن شدن از روشن بودن تایمر اصلی با شروع اولین بازرسی
+    }
+
+    function updateDetailPanel() {
+      if(selectedIndex === null) return;
+      const loc = locations[selectedIndex];
+
+      document.getElementById('loc-name').innerText = loc.name;
+      document.getElementById('loc-desc').innerText = "توضیحات پیش‌فرض: " + loc.desc;
+      
+      const statusBadge = document.getElementById('loc-status');
+      statusBadge.innerText = loc.status === 'done' ? 'انجام شده' : (loc.status === 'review' ? 'نیازمند بررسی' : 'در انتظار بازرسی');
+      statusBadge.className = `status-badge status-${loc.status}`;
+
+      // رندر عکس‌ها
+      const imgGallery = document.getElementById('loc-images');
+      imgGallery.innerHTML = '';
+      [loc.img1, loc.img2, loc.img3].forEach(url => {
+        if(url && url.startsWith('http')) {
+          const img = document.createElement('img');
+          img.src = url;
+          img.className = 'thumb-img';
+          img.alt = 'تصویر لوکیشن';
+          img.onclick = () => window.open(url, '_blank');
+          imgGallery.appendChild(img);
+        }
+      });
+
+      // نمایش بخش فیلدهای ورودی ناظر
+      document.getElementById('inspector-inputs').classList.remove('hidden');
+      document.getElementById('loc-note').value = loc.note || '';
+
+      // لیسنر ذخیره خودکار متن یادداشت ناظر
+      document.getElementById('loc-note').oninput = (e) => {
+        locations[selectedIndex].note = e.target.value;
+        // با تاخیر یا در پایان ذخیره می‌شود، برای اطمینان هرچند ثانیه یکبار سینک فایربیس صدا زده شود
+      };
+    }
+
+    function updateStatus(newStatus) {
+      if(selectedIndex === null) return;
+      locations[selectedIndex].status = newStatus;
+      locations[selectedIndex].note = document.getElementById('loc-note').value;
+      
+      showToast(`وضعیت هدف به ${newStatus === 'done' ? 'انجام شده' : 'نیاز به بررسی'} تغییر کرد`);
+      saveDataToFirebase();
+      renderWorkspace();
+    }
+
+    // ===== TIMERS & CONTROLS (Pause/Resume) =====
+    function startTimer() {
+      if(timerInterval) return;
+      timerInterval = setInterval(() => {
+        if(!isPaused) {
+          totalSeconds++;
+          renderTimerDigits();
+        }
+      }, 1000);
+    }
+
+    function renderTimerDigits() {
+      const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+      const secs = String(totalSeconds % 60).padStart(2, '0');
+      totalTimerText.innerText = `${hrs}:${mins}:${secs}`;
+    }
+
+    pauseResumeBtn.addEventListener('click', () => {
+      isPaused = !isPaused;
+      if(isPaused) {
+        pauseResumeBtn.innerHTML = '<i class="fas fa-play"></i> <span>ادامه</span>';
+        pauseResumeBtn.className = "btn-action btn-success";
+        showToast('تایمر متوقف شد');
+      } else {
+        pauseResumeBtn.innerHTML = '<i class="fas fa-pause"></i> <span>توقف</span>';
+        pauseResumeBtn.className = "btn-action btn-warning";
+        showToast('تایمر مجدداً شروع شد');
+      }
+    });
+
+    // ===== GENERATE REPORT & FINISH ANYTIME =====
+    document.getElementById('finish-inspection-btn').addEventListener('click', () => {
+      saveDataToFirebase();
+      generatePDFReport();
+    });
+
+    function generatePDFReport() {
+      showToast('در حال آماده‌سازی فایل PDF...');
+      
+      // ساخت یک قالب HTML موقت کاملاً فارسی و ساختاریافته برای گرفتن خروجی تمیز
+      const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.direction = 'rtl';
+      element.style.fontFamily = 'Vazirmatn, sans-serif';
+
+      let rowsHtml = '';
+      locations.forEach((loc, i) => {
+        let statusText = loc.status === 'done' ? 'انجام شده' : (loc.status === 'review' ? 'نیاز به بررسی' : 'بازرسی نشده');
+        rowsHtml += `
+          <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding:10px; text-align:right;">${i+1}. ${loc.name}</td>
+            <td style="padding:10px; text-align:center;">${statusText}</td>
+            <td style="padding:10px; text-align:right; font-size:0.9rem; color:#444;">${loc.note || '—'}</td>
+          </tr>
+        `;
+      });
+
+      element.innerHTML = `
+        <h2 style="text-align:center; color:#1565c0;">گزارش نهایی بازرسی میدانی همراه ناظر</h2>
+        <p style="text-align:right;">تایم کل صرف شده: ${totalTimerText.innerText}</p>
+        <table style="width:100%; border-collapse: collapse; margin-top:20px;">
+          <thead>
+            <tr style="background-color:#1565c0; color:white;">
+              <th style="padding:10px; text-align:right;">نام لوکیشن</th>
+              <th style="padding:10px; text-align:center;">وضعیت</th>
+              <th style="padding:10px; text-align:right;">یادداشت ناظر</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      `;
+
+      // تنظیمات آپشن html2pdf برای تبدیل دقیق به PDF بدون مشکل فونت فارسی
+      const opt = {
+        margin:       10,
+        filename:     `گزارش_بازرسی_${new Date().toISOString().slice(0,10)}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().from(element).set(opt).save().then(() => {
+        showToast('📄 فایل PDF با موفقیت دانلود شد.');
+      });
+    }
+
+    // ===== HELPER FUNCTIONS =====
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+  </script>
+</body>
+</html>
